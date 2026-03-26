@@ -1,0 +1,97 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sroa
+      POSTGRES_PASSWORD: sroa
+      POSTGRES_DB: sroa
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+  redis:
+    image: redis:7
+    ports:
+      - "6380:6379"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  auth-service:
+    build: ./auth-service
+    env_file: .env
+    ports:
+      - "8001:8000"
+
+  user-profile-service:
+    build: ./user-profile-service
+    env_file: .env
+    depends_on:
+      - postgres
+    ports:
+      - "8002:8000"
+
+  weather-service:
+    build: ./weather-service
+    env_file: .env
+    depends_on:
+      - redis
+    ports:
+      - "8003:8000"
+
+  market-service:
+    build: ./market-service
+    env_file: .env
+    depends_on:
+      - redis
+    ports:
+      - "8004:8000"
+
+  agent-service:
+    build: ./agent-service
+    env_file: .env
+    depends_on:
+      - kafka
+    ports:
+      - "8005:8000"
+
+  notification-service:
+    build: ./notification-service
+    env_file: .env
+    depends_on:
+      - kafka
+      - postgres
+    ports:
+      - "8006:8000"
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    depends_on:
+      - prometheus
+
+volumes:
+  pg_data:

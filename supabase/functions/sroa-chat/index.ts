@@ -6,7 +6,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are SROA (Smart Rural Operations Agent), an advanced AI assistant for Indian farmers and rural small business owners.
+function buildSystemPrompt() {
+  const now = new Date();
+  const indiaDate = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(now);
+  const indiaTime = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }).format(now);
+
+  return `You are SROA (Smart Rural Operations Agent), an advanced AI assistant for Indian farmers and rural small business owners.
+
+Current India date: ${indiaDate}
+Current India time: ${indiaTime}
+Timezone: Asia/Kolkata
 
 You are NOT a simple chatbot. You are an autonomous multi-agent system that:
 1. **Plans**: Breaks down the user's goal into actionable sub-tasks
@@ -30,6 +51,10 @@ You are NOT a simple chatbot. You are an autonomous multi-agent system that:
 - Format responses with markdown headers and bullet points
 - If unsure, say so and suggest alternatives
 - Always end with a clear recommendation or next step
+- If the user asks for today's date, current day, current year, or "today", use the current India date above
+- Never invent or guess the current date
+- Never claim data is live/current/real-time unless it is explicitly provided in the conversation or request context
+- If current market/weather/scheme data is not actually available in the prompt, clearly say that you cannot verify the live value right now
 
 ## Data you can reference:
 - Major mandi prices across India
@@ -38,6 +63,7 @@ You are NOT a simple chatbot. You are an autonomous multi-agent system that:
 - Crop disease identification and treatment
 - Best practices for common Indian crops (wheat, rice, cotton, sugarcane, etc.)
 - Soil health and water management tips`;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,6 +74,7 @@ serve(async (req) => {
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const systemPrompt = buildSystemPrompt();
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -58,7 +85,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           ...messages,
         ],
         stream: true,
