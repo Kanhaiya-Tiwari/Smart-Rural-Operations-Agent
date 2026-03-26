@@ -1,182 +1,250 @@
-# 🚀 SROA — Smart Rural Operations Agent
+# SROA - Smart Rural Operations Agent
 
-An Agentic AI-powered platform that autonomously plans, analyzes, and executes decisions to solve real-world agricultural problems in India.
+SROA is a full-stack agriculture assistant platform with:
 
----
+1. React + Vite frontend
+2. FastAPI microservices backend
+3. Live weather and mandi integrations
+4. Auth, profile, alerts, and AI recommendation workflow
 
-## 🌾 Problem Statement
+The goal is to provide practical, real-time guidance for farmers using profile-aware weather, market, and alert data.
 
-Farmers in India often struggle with:
+## Core Features
 
-- Lack of real-time mandi price insights  
-- Unpredictable weather risks  
-- Limited access to government schemes  
-- No intelligent decision support  
+1. User registration and login
+2. Editable farmer profile (location, crops, language, notification preferences, privacy)
+3. Live weather data (OpenWeather primary, Open-Meteo fallback)
+4. Live mandi price data (Government of India Open Data / AGMARKNET)
+5. AI recommendation and risk insight based on weather + market
+6. In-app notification alerts with backend evaluation logic
+7. Animated mobile-first dashboard UI
 
-Most existing solutions only provide information, not actionable decisions.
+## Project Structure
 
----
+Top-level:
 
-## 💡 Solution
+1. `src/` - frontend app (React + TypeScript)
+2. `backend/` - microservices, infra, db schema, compose, k8s, monitoring
+3. `supabase/functions/sroa-chat/` - edge chat function
 
-SROA is a multi-agent AI system that:
+Backend services:
 
-- Understands user goals  
-- Breaks them into tasks  
-- Collects real-time data  
-- Makes intelligent decisions  
-- Executes workflows  
+1. `backend/auth-service` - register/login + JWT
+2. `backend/user-profile-service` - profile CRUD + preferences
+3. `backend/weather-service` - weather API aggregation + cache
+4. `backend/market-service` - mandi API aggregation + cache
+5. `backend/agent-service` - recommendation and crop insight logic
+6. `backend/notification-service` - alert evaluation + alert feed
 
-This is not a chatbot — it is an autonomous system.
-
----
-
-## 🎯 Example Use Case
-
-User Input:
-"Help me sell wheat at the best price this week"
-
-System Flow:
-1. Planner Agent → breaks goal into tasks  
-2. Data Agent → fetches mandi prices + weather  
-3. Decision Agent → analyzes trends  
-4. Execution Agent → creates action plan  
-5. Communication Agent → returns response  
-
-Output:
-- Sell at Azadpur Mandi in 2 days  
-- Expected Price: ₹2650/quintal  
-- Risk: Rain expected  
-
----
-
-## 🏗️ Architecture
-
-User → API Gateway → Agent Service → Data + Decision Services → Response
-
----
-
-## 🧠 Agent System
-
-- Planner Agent → task breakdown  
-- Data Agent → data collection  
-- Decision Agent → reasoning  
-- Execution Agent → actions  
-- Communication Agent → user interaction  
-
----
-
-## 🛠️ Tech Stack
-
-Backend:
-- FastAPI (Python)
-- PostgreSQL
-- Redis
-- Kafka
-
-AI:
-- Google Gemini API
-
-DevOps:
-- Docker
-- Kubernetes
-- GitHub Actions
-- ArgoCD
-- Prometheus + Grafana
+## Tech Stack
 
 Frontend:
-- React / Next.js (planned)
 
----
+1. React 18
+2. Vite 5
+3. TypeScript
+4. Tailwind CSS
+5. Framer Motion
+6. TanStack Query
 
-## 📁 Project Structure
+Backend:
 
-sroa/
+1. Python 3.11
+2. FastAPI
+3. PostgreSQL
+4. Redis
+5. Kafka (infra present)
 
-- agent-service/
-- data-service/
-- decision-service/
-- notification-service/
-- auth-service/
-- k8s/
-- terraform/
-- docker-compose.yml
+Infra and Ops:
 
----
+1. Docker Compose
+2. Kubernetes manifests (`backend/k8s`)
+3. Prometheus + Grafana config
+4. GitHub Actions workflow for backend
 
-## 🚀 Getting Started
+## Prerequisites
 
-### Clone Repository
+Install these before running:
 
-git clone https://github.com/your-username/sroa.git
-cd sroa
+1. Node.js 18+
+2. npm
+3. Docker Desktop (or Docker Engine + Compose)
 
-### Run Locally
+Optional:
 
-docker-compose up --build
+1. Supabase CLI (only needed to deploy edge function changes)
 
----
+## Environment Setup
 
-## ☸️ Kubernetes Deployment
+Backend services use `backend/.env`.
 
-kubectl apply -f k8s/
+Minimum required keys for live data:
 
----
+1. `OPENWEATHER_API_KEY`
+2. `AGMARKNET_API_KEY`
 
-## 🔄 CI/CD Pipeline
+You can copy from example:
 
-- Code push → GitHub Actions  
-- Build Docker images  
-- Push to Docker Hub  
-- ArgoCD auto deploy  
+```bash
+cp backend/.env.example backend/.env
+```
 
----
+Then edit `backend/.env` values.
 
-## 📊 Monitoring
+Important:
 
-- Prometheus for metrics  
-- Grafana for dashboards  
+1. `backend/.env` is local and should not be committed
+2. Invalid weather key returns provider 401/404 and breaks weather section
 
-Metrics tracked:
-- API latency  
-- system health  
-- agent performance  
+## Run Locally
 
----
+### 1) Start backend microservices
 
-## 🔐 Security
+```bash
+docker compose -f backend/docker-compose.yml up -d --build
+```
 
-- JWT authentication  
-- API rate limiting  
-- Input validation  
-- Secure secrets  
+### 2) Start frontend
 
----
+```bash
+npm --prefix . run dev
+```
 
-## 🚀 Advanced Features
+If your shell is not in project root, use full path form:
 
-- Agent memory  
-- Feedback loop  
-- Async processing with Kafka  
-- Hallucination control  
+```bash
+npm --prefix /Users/kanha/SROA/agile-spark run dev
+```
 
----
+### 3) Open app
 
-## 📈 Future Improvements
+Vite may choose 5173/5174/5175 depending on free ports. Use the URL printed in terminal.
 
-- Voice input (Hindi support)  
-- WhatsApp integration  
-- Location-based recommendations  
-- Predictive analytics  
+## Default Service Ports
 
----
+Frontend:
 
-## 👨‍💻 Author
+1. `5173` to `5175` (Vite auto fallback)
 
-Kanhaiya Tiwari — DevOps Engineer Aspirant
+Backend APIs:
 
----
+1. `8001` auth-service
+2. `8002` user-profile-service
+3. `8003` weather-service
+4. `8004` market-service
+5. `8005` agent-service
+6. `8006` notification-service
 
-## 📜 License
+Data + infra:
 
-MIT License
+1. `5433` postgres
+2. `6380` redis
+3. `29092` kafka
+
+Monitoring:
+
+1. Prometheus and Grafana containers run internally in compose
+
+## Expected User Flow
+
+1. Register a new user
+2. Login
+3. Open Profile and set:
+	1. valid location
+	2. crops
+4. Save profile
+5. Go to Home dashboard
+6. Verify:
+	1. weather card is live
+	2. mandi card is live
+	3. AI recommendation appears
+	4. alerts update
+
+If profile location/crop is empty, live dashboard data cannot be computed.
+
+## Date and Time Behavior
+
+1. Home page shows full day/date/year (India locale format)
+2. Date updates automatically over time in UI
+3. Chat path injects current India date/time context to reduce stale-date AI responses
+
+## Live Data Reliability Notes
+
+Weather:
+
+1. Primary source: OpenWeather
+2. Fallback source: Open-Meteo geocoding/weather for difficult city strings
+
+Mandi:
+
+1. Source: AGMARKNET via Government Open Data API
+2. Matching includes fallback logic when exact district+commodity pair is unavailable
+
+## Useful Commands
+
+Build frontend:
+
+```bash
+npm run build
+```
+
+View backend service status:
+
+```bash
+docker compose -f backend/docker-compose.yml ps
+```
+
+View backend logs:
+
+```bash
+docker compose -f backend/docker-compose.yml logs --tail=100 weather-service
+```
+
+Restart one service:
+
+```bash
+docker compose -f backend/docker-compose.yml up -d --build weather-service
+```
+
+Stop backend:
+
+```bash
+docker compose -f backend/docker-compose.yml down
+```
+
+## Troubleshooting
+
+### Login button does nothing
+
+1. Ensure auth-service is running on `8001`
+2. Hard refresh browser
+3. Clear site local storage if stale auth state exists
+
+### Weather shows city not found
+
+1. Check `OPENWEATHER_API_KEY` is valid
+2. Restart weather service after env changes
+3. Use realistic location strings (city, city+state)
+
+### Home shows "Analyzing weather and market data..."
+
+1. Confirm profile has location and crop
+2. Check weather and market APIs are returning 200
+3. Inspect notification/agent service logs if weather+market are healthy
+
+### Mandi not found for some crop/location
+
+1. Some exact combinations may not have same-day records
+2. Service uses best available live match fallback, but can still fail for sparse inputs
+
+## Supabase Chat Function Note
+
+Code is in:
+
+1. `supabase/functions/sroa-chat/index.ts`
+
+If you edit it, you must deploy it with Supabase CLI for remote effect.
+
+## License
+
+MIT
