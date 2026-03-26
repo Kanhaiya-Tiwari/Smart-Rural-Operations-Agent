@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 @layer base {
   :root {
@@ -126,5 +126,29 @@
   }
   .font-display {
     font-family: var(--font-display);
+  }
+
+  /* Smooth scroll for all pages */
+  .overflow-y-auto {
+    scroll-behavior: smooth;
+  }
+
+  /* Selection color */
+  ::selection {
+    background-color: hsl(152 45% 38% / 0.2);
+  }
+
+  /* Focus ring style */
+  *:focus-visible {
+    outline: 2px solid hsl(152 45% 38% / 0.5);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+
+  /* Smooth transitions on all interactive elements */
+  a, button, input, select, textarea {
+    transition-property: color, background-color, border-color, box-shadow, transform;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }

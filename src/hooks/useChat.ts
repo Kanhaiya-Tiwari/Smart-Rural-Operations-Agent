@@ -4,6 +4,32 @@ type Message = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sroa-chat`;
 
+function buildRuntimeContextMessage(): Message {
+  const now = new Date();
+  const indiaDate = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(now);
+  const indiaTime = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }).format(now);
+
+  return {
+    role: "user",
+    content:
+      `System context for accuracy: Current India date is ${indiaDate}. Current India time is ${indiaTime}. ` +
+      "If asked for today, current day, current month, or current year, use this date context. " +
+      "Do not invent live or real-time facts unless they are explicitly provided in the conversation.",
+  };
+}
+
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -22,6 +48,10 @@ export function useChat() {
 
       let assistantSoFar = "";
       const allMessages = [...messages, userMsg];
+      const requestMessages = [
+        buildRuntimeContextMessage(),
+        ...allMessages,
+      ];
 
       try {
         const resp = await fetch(CHAT_URL, {
@@ -31,7 +61,7 @@ export function useChat() {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            messages: allMessages.map((m) => ({ role: m.role, content: m.content })),
+            messages: requestMessages.map((m) => ({ role: m.role, content: m.content })),
           }),
         });
 
