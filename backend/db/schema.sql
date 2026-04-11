@@ -31,4 +31,14 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS alert_rules (
+  id UUID PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  rule_id TEXT NOT NULL,
+  rule_payload JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, rule_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id_created_at ON notifications (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_alert_rules_user_updated ON alert_rules (user_id, updated_at DESC);

@@ -113,7 +113,7 @@ npm --prefix . run dev
 If your shell is not in project root, use full path form:
 
 ```bash
-npm --prefix /Users/kanha/SROA/agile-spark run dev
+npm --prefix /Users/kanha/SRROA/Smart-Rural-Operations-Agent run dev
 ```
 
 ### 3) Open app
@@ -248,3 +248,25 @@ If you edit it, you must deploy it with Supabase CLI for remote effect.
 ## License
 
 MIT
+
+## DevOps Production Scaffold
+
+A production-oriented DevOps scaffold is available in `devops/`.
+
+Included components:
+
+1. Docker runtime files for frontend/backend (`devops/docker`)
+2. Local full-stack compose (`devops/docker-compose.yml`)
+3. Kubernetes raw manifests (`devops/k8s`)
+4. Helm chart (`devops/helm/sroa`)
+5. Terraform AWS modules (`devops/terraform`)
+6. Ansible provisioning playbook (`devops/ansible/playbook.yml`)
+7. GitHub Actions CI/CD workflows (`.github/workflows`)
+
+Quick start for DevOps stack:
+
+```bash
+docker compose -f devops/docker-compose.yml up -d --build
+```
+
+For complete infra and deployment steps, see `devops/README.md`.

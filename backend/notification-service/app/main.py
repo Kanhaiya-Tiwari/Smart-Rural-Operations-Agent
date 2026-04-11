@@ -5,6 +5,7 @@ import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from psycopg2.extras import Json
 
 app = FastAPI(title="notification-service")
 POSTGRES_DSN = os.getenv("POSTGRES_DSN", "postgresql://sroa:sroa@localhost:5432/sroa")
@@ -29,13 +30,82 @@ class EvaluateRequest(BaseModel):
     analysis: dict
 
 
+class RuleSyncRequest(BaseModel):
+    rules: list[dict]
+
+
 def get_conn():
     return psycopg2.connect(POSTGRES_DSN)
+
+
+def init_tables():
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS alert_rules (
+                id UUID PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                rule_id TEXT NOT NULL,
+                rule_payload JSONB NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                UNIQUE (user_id, rule_id)
+            );
+            """
+        )
+        cur.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_alert_rules_user_updated
+            ON alert_rules (user_id, updated_at DESC);
+            """
+        )
+
+
+@app.on_event("startup")
+def startup():
+    init_tables()
 
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "notification-service"}
+
+
+@app.get("/alert-rules/{user_id}")
+def get_alert_rules(user_id: str):
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT rule_payload
+            FROM alert_rules
+            WHERE user_id = %s
+            ORDER BY updated_at DESC
+            """,
+            (user_id,),
+        )
+        rows = cur.fetchall()
+
+    return {"rules": [row[0] for row in rows]}
+
+
+@app.put("/alert-rules/{user_id}")
+def put_alert_rules(user_id: str, payload: RuleSyncRequest):
+    # Replace strategy keeps client/server state deterministic across devices.
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("DELETE FROM alert_rules WHERE user_id = %s", (user_id,))
+
+        for rule in payload.rules:
+            rule_id = str(rule.get("id", "")).strip()
+            if not rule_id:
+                continue
+            cur.execute(
+                """
+                INSERT INTO alert_rules (id, user_id, rule_id, rule_payload, updated_at)
+                VALUES (%s, %s, %s, %s, NOW())
+                """,
+                (str(uuid.uuid4()), user_id, rule_id, Json(rule)),
+            )
+
+    return {"status": "saved", "count": len(payload.rules)}
 
 
 def persist_notification(user_id: str, title: str, message: str, channel: str, severity: str):

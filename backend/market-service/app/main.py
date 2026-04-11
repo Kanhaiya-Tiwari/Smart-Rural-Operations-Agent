@@ -27,6 +27,19 @@ COMMODITY_ALIASES = {
     "cotton": ["Cotton"],
 }
 
+BASE_PRICES = {
+    "wheat": 2275,
+    "rice": 2183,
+    "paddy": 2183,
+    "maize": 2090,
+    "soybean": 4892,
+    "mustard": 5650,
+    "cotton": 7121,
+    "tomato": 1500,
+    "potato": 1200,
+    "onion": 2000,
+}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -111,6 +124,41 @@ def fetch_records(params: dict) -> list[dict]:
     return data.get("records") or []
 
 
+def fetch_records_public(params: dict) -> list[dict]:
+    try:
+        resp = httpx.get(AGMARKNET_ENDPOINT, params=params, timeout=10)
+    except httpx.HTTPError:
+        return []
+
+    if resp.status_code != 200:
+        return []
+
+    data = resp.json()
+    return data.get("records") or []
+
+
+def estimate_market_price(crop: str, location: str) -> dict:
+    crop_key = crop.strip().lower()
+    base_price = BASE_PRICES.get(crop_key, 3000)
+    district_name = location.split(",")[0].strip().title() if location else "Local"
+
+    day = datetime.now(timezone.utc).day
+    month = datetime.now(timezone.utc).month
+    drift = ((day * 31 + month * 17 + len(crop_key) * 7) % 9) - 4
+    price = base_price + drift * max(1, round(base_price / 100))
+    trend = "down" if drift < 0 else "up"
+
+    return {
+        "crop": crop,
+        "location": location,
+        "mandi_name": f"{district_name} Mandi (Estimated)",
+        "price": max(1, int(price)),
+        "trend": trend,
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+        "source": "estimated-fallback",
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "market-service"}
@@ -124,40 +172,70 @@ def market_price(crop: str = Query(...), location: str = Query(...)):
     if cached:
         return json.loads(cached)
 
-    if not AGMARKNET_API_KEY:
-        raise HTTPException(status_code=503, detail="AGMARKNET_API_KEY is not configured")
-
     district_name = location.split(",")[0].strip().title()
     aliases = commodity_candidates(crop)
     latest = None
 
-    for alias in aliases:
-        exact_records = fetch_records(
-            {
-                "api-key": AGMARKNET_API_KEY,
-                "format": "json",
-                "limit": 50,
-                "filters[commodity]": alias,
-                "filters[district]": district_name,
-            }
-        )
-        latest = choose_best_record(exact_records, location)
-        if latest:
-            break
-
-    if latest is None:
+    if not AGMARKNET_API_KEY:
         for alias in aliases:
-            broad_records = fetch_records(
+            public_records = fetch_records_public(
+                {
+                    "format": "json",
+                    "limit": 50,
+                    "filters[commodity]": alias,
+                    "filters[district]": district_name,
+                }
+            )
+            latest = choose_best_record(public_records, location)
+            if latest:
+                break
+
+        if latest is None:
+            for alias in aliases:
+                public_records = fetch_records_public(
+                    {
+                        "format": "json",
+                        "limit": 100,
+                        "filters[commodity]": alias,
+                    }
+                )
+                latest = choose_best_record(public_records, location)
+                if latest:
+                    break
+
+        if latest is None:
+            estimated = estimate_market_price(crop, location)
+            client.setex(key, CACHE_TTL_SECONDS, json.dumps(estimated))
+            return estimated
+
+    if AGMARKNET_API_KEY:
+        for alias in aliases:
+            exact_records = fetch_records(
                 {
                     "api-key": AGMARKNET_API_KEY,
                     "format": "json",
-                    "limit": 100,
+                    "limit": 50,
                     "filters[commodity]": alias,
+                    "filters[district]": district_name,
                 }
             )
-            latest = choose_best_record(broad_records, location)
+            latest = choose_best_record(exact_records, location)
             if latest:
                 break
+
+        if latest is None:
+            for alias in aliases:
+                broad_records = fetch_records(
+                    {
+                        "api-key": AGMARKNET_API_KEY,
+                        "format": "json",
+                        "limit": 100,
+                        "filters[commodity]": alias,
+                    }
+                )
+                latest = choose_best_record(broad_records, location)
+                if latest:
+                    break
 
     if latest is None:
         raise HTTPException(status_code=404, detail="No live mandi records found for crop/location")
