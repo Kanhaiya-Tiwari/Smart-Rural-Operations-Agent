@@ -1,0 +1,40 @@
+global:
+  imagePullPolicy: IfNotPresent
+
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: your-dockerhub-user/sroa-frontend
+    tag: latest
+  service:
+    type: LoadBalancer
+    port: 80
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+backend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: your-dockerhub-user/sroa-backend
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 8080
+  env:
+    NODE_ENV: production
+    PORT: "8080"
+    DATABASE_URL: postgres://sroa:sroa@db:5432/sroa
+  resources:
+    requests:
+      cpu: 150m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

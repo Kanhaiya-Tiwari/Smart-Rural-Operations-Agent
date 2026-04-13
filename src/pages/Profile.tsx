@@ -1,13 +1,15 @@
 import { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, MapPin, Wheat, Phone, ChevronRight, Pencil, Save, X, Languages, Bell, MessageCircle, Mail } from "lucide-react";
+import { User, MapPin, Wheat, Phone, ChevronRight, Pencil, Save, X, Bell, MessageCircle, Mail } from "lucide-react";
 import { useProfile, ProfileData } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { profile, updateProfile } = useProfile();
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<ProfileData>(profile);
 
@@ -171,83 +173,27 @@ const Profile = () => {
           </div>
         </motion.div>
 
-        {/* Settings */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <h3 className="text-sm font-semibold font-display text-foreground mb-3">Settings</h3>
-          <div className="bg-card rounded-2xl shadow-card divide-y divide-border overflow-hidden">
-            {[
-              { key: "language", label: "Language", icon: Languages },
-              { key: "in-app", label: "In-App Alerts", icon: Bell },
-              { key: "whatsapp", label: "WhatsApp Alerts", icon: MessageCircle },
-              { key: "sms", label: "SMS Alerts", icon: Phone },
-            ].map((item, i) => (
-              <motion.div
-                key={item.key}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.25 + i * 0.05 }}
-                className="flex items-center justify-between p-4 hover:bg-accent/30 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <item.icon className="w-4 h-4 text-muted-foreground" />
-                  <p className="text-sm text-card-foreground">{item.label}</p>
-                </div>
-                {item.key === "language" ? (
-                  isEditing ? (
-                    <select
-                      value={draft.language}
-                      onChange={(e) => setDraft({ ...draft, language: e.target.value as "en" | "hi" })}
-                      className="text-sm bg-accent/50 border border-border rounded-lg px-2 py-1"
-                    >
-                      <option value="en">English</option>
-                      <option value="hi">Hindi</option>
-                    </select>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">{profile.language === "hi" ? "Hindi" : "English"}</span>
-                  )
-                ) : (
-                  <button
-                    type="button"
-                    disabled={!isEditing}
-                    onClick={() => {
-                      if (!isEditing) return;
-                      if (item.key === "in-app") {
-                        setDraft({
-                          ...draft,
-                          notificationSettings: {
-                            ...draft.notificationSettings,
-                            inApp: !draft.notificationSettings.inApp,
-                          },
-                        });
-                      }
-                      if (item.key === "whatsapp") {
-                        setDraft({
-                          ...draft,
-                          notificationSettings: {
-                            ...draft.notificationSettings,
-                            whatsapp: !draft.notificationSettings.whatsapp,
-                          },
-                        });
-                      }
-                      if (item.key === "sms") {
-                        setDraft({
-                          ...draft,
-                          notificationSettings: {
-                            ...draft.notificationSettings,
-                            sms: !draft.notificationSettings.sms,
-                          },
-                        });
-                      }
-                    }}
-                    className="text-xs px-2 py-1 rounded-lg border border-border bg-accent/50 disabled:opacity-70"
-                  >
-                    {item.key === "in-app" && (draft.notificationSettings.inApp ? "Enabled" : "Disabled")}
-                    {item.key === "whatsapp" && (draft.notificationSettings.whatsapp ? "Enabled" : "Disabled")}
-                    {item.key === "sms" && (draft.notificationSettings.sms ? "Enabled" : "Disabled")}
-                  </button>
-                )}
-              </motion.div>
-            ))}
+          <h3 className="text-sm font-semibold font-display text-foreground mb-3">Smart Alerts</h3>
+          <div className="bg-card rounded-2xl shadow-card p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-accent">
+                <Bell className="w-4 h-4 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-card-foreground">Set weather and mandi alerts from one place</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Configure custom temperature, rain and market-rate alerts with AI-assisted rules in Notifications.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/notifications")}
+              className="w-full mt-4 rounded-xl gradient-hero py-2 text-sm text-primary-foreground font-medium"
+            >
+              Open Alert Controls
+            </button>
           </div>
         </motion.div>
 

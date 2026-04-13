@@ -1,0 +1,31 @@
+{{- if .Values.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sroa.fullname" . }}-backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "sroa.fullname" . }}-backend
+  template:
+    metadata:
+      labels:
+        app: {{ include "sroa.fullname" . }}-backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.backend.env.NODE_ENV | quote }}
+            - name: PORT
+              value: {{ .Values.backend.env.PORT | quote }}
+            - name: DATABASE_URL
+              value: {{ .Values.backend.env.DATABASE_URL | quote }}
+          resources:
+{{ toYaml .Values.backend.resources | indent 12 }}
+{{- end }}

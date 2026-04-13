@@ -1,0 +1,28 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install sroa devops/helm/sroa \
+            --namespace sroa --create-namespace \
+            --set frontend.image.repository=${{ secrets.FRONTEND_IMAGE_REPO }} \
+            --set frontend.image.tag=${{ secrets.IMAGE_TAG }} \
+            --set backend.image.repository=${{ secrets.BACKEND_IMAGE_REPO }} \
+            --set backend.image.tag=${{ secrets.IMAGE_TAG }}

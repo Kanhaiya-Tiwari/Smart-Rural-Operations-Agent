@@ -218,22 +218,20 @@ async def get_weather(location: str = Query(..., min_length=2)):
     if cached:
         return json.loads(cached)
 
-    if not OPENWEATHER_API_KEY:
-        raise HTTPException(status_code=503, detail="OPENWEATHER_API_KEY is not configured")
-
     try:
         async with httpx.AsyncClient(timeout=8.0) as http:
             last_error: str | None = None
             for candidate in location_candidates(location):
-                payload = await fetch_weather_by_query(http, candidate, location)
-                if payload is not None:
-                    client.setex(cache_key, CACHE_TTL_SECONDS, json.dumps(payload))
-                    return payload
+                if OPENWEATHER_API_KEY:
+                    payload = await fetch_weather_by_query(http, candidate, location)
+                    if payload is not None:
+                        client.setex(cache_key, CACHE_TTL_SECONDS, json.dumps(payload))
+                        return payload
 
-                payload = await fetch_weather_by_geocode(http, candidate, location)
-                if payload is not None:
-                    client.setex(cache_key, CACHE_TTL_SECONDS, json.dumps(payload))
-                    return payload
+                    payload = await fetch_weather_by_geocode(http, candidate, location)
+                    if payload is not None:
+                        client.setex(cache_key, CACHE_TTL_SECONDS, json.dumps(payload))
+                        return payload
 
                 payload = await fetch_weather_via_open_meteo(http, candidate, location)
                 if payload is not None:

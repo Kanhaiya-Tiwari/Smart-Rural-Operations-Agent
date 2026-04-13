@@ -79,26 +79,21 @@ export function useDashboardData(profile: ProfileData) {
   });
 
   const primaryCrop = useMemo(() => profile.crops[0] || "wheat", [profile.crops]);
+  const effectiveLocation = useMemo(
+    () => (profile.location && profile.location.trim() ? profile.location : "Bhopal, Madhya Pradesh"),
+    [profile.location]
+  );
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      if (!profile.location || !primaryCrop) {
-        setState((s) => ({
-          ...s,
-          isLoading: false,
-          error: "Update profile location and crops to load live weather and mandi data.",
-        }));
-        return;
-      }
-
       setState((s) => ({ ...s, isLoading: true }));
 
       try {
         const [weatherResult, marketResult] = await Promise.allSettled([
-          getJson<WeatherData>(`${WEATHER_API}/weather?location=${encodeURIComponent(profile.location)}`),
-          getJson<MarketData>(`${MARKET_API}/market-price?crop=${encodeURIComponent(primaryCrop)}&location=${encodeURIComponent(profile.location)}`),
+          getJson<WeatherData>(`${WEATHER_API}/weather?location=${encodeURIComponent(effectiveLocation)}`),
+          getJson<MarketData>(`${MARKET_API}/market-price?crop=${encodeURIComponent(primaryCrop)}&location=${encodeURIComponent(effectiveLocation)}`),
         ]);
 
         const weather = weatherResult.status === "fulfilled" ? weatherResult.value : null;
@@ -137,6 +132,10 @@ export function useDashboardData(profile: ProfileData) {
           .filter((result): result is PromiseRejectedResult => result.status === "rejected")
           .map((result) => result.reason instanceof Error ? result.reason.message : "Unknown live data error");
 
+        const locationNotice = !profile.location?.trim()
+          ? "Profile location missing. Showing default data for Bhopal, Madhya Pradesh."
+          : "";
+
         if (!cancelled) {
           setState({
             weather,
@@ -144,7 +143,7 @@ export function useDashboardData(profile: ProfileData) {
             analysis,
             alerts: alertsResp.alerts,
             isLoading: false,
-            error: errors.join(" | "),
+            error: [locationNotice, ...errors].filter(Boolean).join(" | "),
           });
         }
       } catch (e) {
@@ -165,7 +164,7 @@ export function useDashboardData(profile: ProfileData) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [primaryCrop, profile.crops, profile.location, profile.userId]);
+  }, [effectiveLocation, primaryCrop, profile.crops, profile.location, profile.userId]);
 
   return state;
 }
