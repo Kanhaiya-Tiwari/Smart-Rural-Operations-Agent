@@ -40,7 +40,7 @@ export interface FiredAlert {
 
 const STORAGE_KEY = "sroa-alert-rules";
 const FIRED_KEY = "sroa-fired-alerts";
-const ALERT_API = serviceUrl(8006);
+const ALERT_API = serviceUrl(8097);
 
 const DEFAULT_RULES: AlertRule[] = [
   { id: "temp-cold", type: "weather", label: "Temperature Too Cold", labelHi: "तापमान बहुत कम", enabled: true, metric: "temp_min", threshold: 10, operator: "lt" },

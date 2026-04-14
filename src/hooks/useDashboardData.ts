@@ -43,10 +43,10 @@ interface DashboardDataState {
   error: string;
 }
 
-const WEATHER_API = serviceUrl(8003);
-const MARKET_API = serviceUrl(8004);
-const AGENT_API = serviceUrl(8005);
-const ALERT_API = serviceUrl(8006);
+const WEATHER_API = serviceUrl(8094);
+const MARKET_API = serviceUrl(8095);
+const AGENT_API = serviceUrl(8096);
+const ALERT_API = serviceUrl(8097);
 
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
   const resp = await fetch(url, init);

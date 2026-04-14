@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: sroa
       POSTGRES_DB: sroa
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
@@ -27,7 +27,7 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "29092:29092"
+      - "29091:29091"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -40,7 +40,7 @@ services:
     build: ./auth-service
     env_file: .env
     ports:
-      - "8001:8000"
+      - "8092:8000"
 
   user-profile-service:
     build: ./user-profile-service
@@ -48,7 +48,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "8002:8000"
+      - "8093:8000"
 
   weather-service:
     build: ./weather-service
@@ -56,7 +56,7 @@ services:
     depends_on:
       - redis
     ports:
-      - "8003:8000"
+      - "8094:8000"
 
   market-service:
     build: ./market-service
@@ -64,7 +64,7 @@ services:
     depends_on:
       - redis
     ports:
-      - "8004:8000"
+      - "8095:8000"
 
   agent-service:
     build: ./agent-service
@@ -72,7 +72,7 @@ services:
     depends_on:
       - kafka
     ports:
-      - "8005:8000"
+      - "8096:8000"
 
   notification-service:
     build: ./notification-service
@@ -81,17 +81,7 @@ services:
       - kafka
       - postgres
     ports:
-      - "8006:8000"
-
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-
-  grafana:
-    image: grafana/grafana:11.2.2
-    depends_on:
-      - prometheus
+      - "8097:8000"
 
 volumes:
   pg_data:

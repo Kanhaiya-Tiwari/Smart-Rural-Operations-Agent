@@ -26,7 +26,7 @@ interface LoginPayload {
 
 const STORAGE_KEY = "sroa-auth";
 const LOCATION_REFRESH_KEY = "sroa-location-pending-refresh";
-const AUTH_API = serviceUrl(8001);
+const AUTH_API = serviceUrl(8092);
 const authListeners = new Set<(auth: AuthState | null) => void>();
 
 function readAuth(): AuthState | null {

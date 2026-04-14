@@ -22,7 +22,7 @@ interface DetectionResult {
   additionalTips: string[];
 }
 
-const AGENT_API = serviceUrl(8005);
+const AGENT_API = serviceUrl(8096);
 
 async function toBase64(file: File): Promise<string> {
   const dataUrl = await new Promise<string>((resolve, reject) => {

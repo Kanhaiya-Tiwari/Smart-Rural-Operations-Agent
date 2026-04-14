@@ -45,7 +45,7 @@ const DEFAULT_PROFILE = (userId: string, name: string): ProfileData => ({
 });
 
 const STORAGE_KEY = "sroa-profile";
-const PROFILE_API = serviceUrl(8002);
+const PROFILE_API = serviceUrl(8093);
 
 export function useProfile() {
   const auth = getAuthFromStorage();
