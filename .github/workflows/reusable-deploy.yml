@@ -12,6 +12,9 @@ on:
       image_tag:
         required: true
         type: string
+    secrets:
+      KUBECONFIG:
+        required: true
 
 jobs:
   deploy:
