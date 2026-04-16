@@ -17,7 +17,7 @@ on:
       instance_type:
         required: false
         type: string
-        default: "t3.large"
+        default: "t3.micro"
       key_name:
         required: true
         type: string
