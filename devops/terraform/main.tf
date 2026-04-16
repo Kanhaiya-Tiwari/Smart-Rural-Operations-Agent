@@ -5,17 +5,7 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.0"
-    }
   }
-}
-
-resource "random_string" "suffix" {
-  length  = 4
-  special = false
-  upper   = false
 }
 
 provider "aws" {
@@ -55,7 +45,7 @@ data "aws_subnets" "default" {
 module "security_group" {
   source       = "./modules/security_group"
   vpc_id       = data.aws_vpc.default.id
-  project_name = "${var.project_name}-${random_string.suffix.result}"
+  project_name = var.project_name
   ssh_cidr     = var.ssh_cidr
 }
 
@@ -71,7 +61,7 @@ resource "aws_instance" "app" {
   })
 
   tags = {
-    Name = "${var.project_name}-kind-cluster-${random_string.suffix.result}"
+    Name = "${var.project_name}-kind-cluster"
   }
 }
 
@@ -80,6 +70,6 @@ resource "aws_eip" "app" {
   domain   = "vpc"
 
   tags = {
-    Name = "${var.project_name}-eip-${random_string.suffix.result}"
+    Name = "${var.project_name}-eip"
   }
 }

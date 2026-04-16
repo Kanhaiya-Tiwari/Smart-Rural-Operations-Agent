@@ -6,6 +6,10 @@ on:
       aws_region:
         required: true
         type: string
+      project_name:
+        required: false
+        type: string
+        default: "sroa"
       ami_id:
         required: false
         type: string
@@ -68,6 +72,7 @@ jobs:
         run: terraform plan -out=tfplan
         env:
           TF_VAR_aws_region: ${{ inputs.aws_region }}
+          TF_VAR_project_name: ${{ inputs.project_name }}-${{ github.run_number }}
           TF_VAR_ami_id: ${{ inputs.ami_id }}
           TF_VAR_instance_type: ${{ inputs.instance_type }}
           TF_VAR_key_name: ${{ inputs.key_name }}
@@ -84,6 +89,7 @@ jobs:
         run: terraform destroy -auto-approve
         env:
           TF_VAR_aws_region: ${{ inputs.aws_region }}
+          TF_VAR_project_name: ${{ inputs.project_name }}-${{ github.run_number }}
           TF_VAR_ami_id: ${{ inputs.ami_id }}
           TF_VAR_instance_type: ${{ inputs.instance_type }}
           TF_VAR_key_name: ${{ inputs.key_name }}
