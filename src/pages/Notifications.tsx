@@ -192,26 +192,6 @@ const Notifications = () => {
     updateRule("high-uv", { enabled: tomorrow.maxTemp > 36 || tomorrow.rainPct < 25, threshold: 8, operator: "gt" });
   };
 
-  const backendAlerts: UiAlert[] = alerts.length
-    ? alerts.map((a) => {
-        const type: NotificationType = a.severity === "critical" ? "destructive" : a.severity === "warning" ? "warning" : a.severity === "info" ? "info" : "success";
-        return {
-          id: a.id,
-          title: a.title,
-          message: a.message,
-          type,
-          category: /market|mandi|price|sell/.test(`${a.title} ${a.message}`.toLowerCase())
-            ? "market"
-            : /ai|risk|crop/.test(`${a.title} ${a.message}`.toLowerCase())
-            ? "ai"
-            : "weather",
-          time: a.created_at ? new Date(a.created_at).toLocaleString() : "recent",
-          icon: iconByType[type],
-          ts: a.created_at ? new Date(a.created_at).getTime() : Date.now(),
-        };
-      })
-    : [];
-
   const localAlerts: UiAlert[] = firedAlerts.map((a) => {
     const type: NotificationType = a.severity === "danger" ? "destructive" : a.severity === "warning" ? "warning" : "info";
     const category: "weather" | "market" | "ai" =
@@ -229,6 +209,26 @@ const Notifications = () => {
   });
 
   const mappedAlerts = useMemo(() => {
+    const backendAlerts: UiAlert[] = alerts.length
+      ? alerts.map((a) => {
+          const type: NotificationType = a.severity === "critical" ? "destructive" : a.severity === "warning" ? "warning" : a.severity === "info" ? "info" : "success";
+          return {
+            id: a.id,
+            title: a.title,
+            message: a.message,
+            type,
+            category: /market|mandi|price|sell/.test(`${a.title} ${a.message}`.toLowerCase())
+              ? "market"
+              : /ai|risk|crop/.test(`${a.title} ${a.message}`.toLowerCase())
+              ? "ai"
+              : "weather",
+            time: a.created_at ? new Date(a.created_at).toLocaleString() : "recent",
+            icon: iconByType[type],
+            ts: a.created_at ? new Date(a.created_at).getTime() : Date.now(),
+          };
+        })
+      : [];
+
     const merged = [...localAlerts, ...backendAlerts].sort((a, b) => b.ts - a.ts);
     if (merged.length) return merged;
     return [
@@ -243,7 +243,7 @@ const Notifications = () => {
         ts: Date.now(),
       },
     ];
-  }, [localAlerts, backendAlerts]);
+  }, [localAlerts, alerts, iconByType]);
 
   const filteredAlerts = useMemo(() => {
     if (feedFilter === "all") return mappedAlerts;
