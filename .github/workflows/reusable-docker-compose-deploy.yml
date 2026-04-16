@@ -4,11 +4,13 @@ on:
   workflow_call:
     inputs:
       frontend_image_repo:
-        required: true
+        required: false
         type: string
+        default: "kanhaiyatiwari/sroa-frontend"
       backend_image_repo:
-        required: true
+        required: false
         type: string
+        default: "kanhaiyatiwari/sroa-backend"
       image_tag:
         required: true
         type: string
