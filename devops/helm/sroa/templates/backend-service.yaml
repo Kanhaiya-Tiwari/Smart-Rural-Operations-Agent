@@ -1,13 +1,17 @@
-{{- if .Values.backend.enabled }}
+{{- $root := . -}}
+{{- range $service := .Values.services }}
+{{- if $service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sroa.fullname" . }}-backend
+  name: {{ include "sroa.fullname" $root }}-{{ $service.name }}
 spec:
-  type: {{ .Values.backend.service.type }}
+  type: {{ $service.service.type }}
   selector:
-    app: {{ include "sroa.fullname" . }}-backend
+    app: {{ include "sroa.fullname" $root }}-{{ $service.name }}
   ports:
-    - port: {{ .Values.backend.service.port }}
-      targetPort: 8080
+    - port: {{ $service.service.port }}
+      targetPort: {{ $service.service.port }}
+---
+{{- end }}
 {{- end }}

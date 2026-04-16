@@ -33,10 +33,50 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-frontend:${{ github.ref_name }}
 
-      - name: Build and push backend image
+      - name: Build and push auth-service image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: devops/docker/backend.Dockerfile
+          context: backend/auth-service
+          file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-backend:${{ github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-auth-service:${{ github.ref_name }}
+
+      - name: Build and push user-profile-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/user-profile-service
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-user-profile-service:${{ github.ref_name }}
+
+      - name: Build and push weather-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/weather-service
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-weather-service:${{ github.ref_name }}
+
+      - name: Build and push market-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/market-service
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-market-service:${{ github.ref_name }}
+
+      - name: Build and push agent-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/agent-service
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-agent-service:${{ github.ref_name }}
+
+      - name: Build and push notification-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/notification-service
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sroa-notification-service:${{ github.ref_name }}

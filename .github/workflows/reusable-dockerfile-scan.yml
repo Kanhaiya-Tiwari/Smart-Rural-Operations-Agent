@@ -1,0 +1,31 @@
+name: Reusable Dockerfile scan
+
+on:
+  workflow_call:
+
+jobs:
+  hadolint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan frontend Dockerfile
+        run: docker run --rm -i hadolint/hadolint < devops/docker/frontend.Dockerfile
+
+      - name: Scan auth-service Dockerfile
+        run: docker run --rm -i hadolint/hadolint < backend/auth-service/Dockerfile
+
+      - name: Scan user-profile-service Dockerfile
+        run: docker run --rm -i hadolint/hadolint < backend/user-profile-service/Dockerfile
+
+      - name: Scan weather-service Dockerfile
+        run: docker run --rm -i hadolint/hadolint < backend/weather-service/Dockerfile
+
+      - name: Scan market-service Dockerfile
+        run: docker run --rm -i hadolint/hadolint < backend/market-service/Dockerfile
+
+      - name: Scan agent-service Dockerfile
+        run: docker run --rm -i hadolint/hadolint < backend/agent-service/Dockerfile
+
+      - name: Scan notification-service Dockerfile
+        run: docker run --rm -i hadolint/hadolint < backend/notification-service/Dockerfile

@@ -8,7 +8,7 @@ This directory contains production-style DevOps scaffolding for Smart Rural Oper
 - `nginx/`: Reverse proxy and static frontend routing configuration.
 - `docker-compose.yml`: Local orchestration for frontend, backend, and PostgreSQL.
 - `k8s/`: Kubernetes manifests (Deployments, Services, secret template).
-- `helm/sroa/`: Helm chart for templated Kubernetes deployment.
+- `helm/sroa/`: Helm chart for templated Kubernetes deployment of frontend and six backend microservices.
 - `terraform/`: Infrastructure provisioning on AWS (VPC, subnet, SG, EC2).
 - `ansible/`: Host provisioning playbook and inventory example.
 
@@ -55,6 +55,12 @@ helm status sroa -n sroa
 
 ## 4. Terraform Provisioning (AWS)
 
+The Terraform configuration now targets the AWS default VPC and provisions:
+- an Application Load Balancer
+- 2 EC2 instances in an Auto Scaling Group
+- `t3.large` EC2 instances by default for better capacity
+- security group rules for SSH, HTTP, HTTPS, and app traffic
+
 1) Copy vars:
 
 ```bash
@@ -75,9 +81,9 @@ terraform plan
 terraform apply
 ```
 
-Outputs include EC2 public IP for Ansible and deployment access.
+Outputs include the load balancer DNS name and the EC2 instance details.
 
-## 5. Ansible Host Provisioning
+## 5. Ansible Host Provisioning and Kind cluster
 
 1) Copy and edit inventory:
 
@@ -85,13 +91,19 @@ Outputs include EC2 public IP for Ansible and deployment access.
 cp devops/ansible/inventory.ini.example devops/ansible/inventory.ini
 ```
 
-2) Run playbook:
+2) Run the Kind provisioning playbook:
 
 ```bash
-ansible-playbook -i devops/ansible/inventory.ini devops/ansible/playbook.yml
+ansible-playbook -i devops/ansible/inventory.ini devops/ansible/playbook-kind.yml
 ```
 
-This installs Docker, Docker Compose plugin, Node.js 20, and baseline dependencies.
+This playbook installs:
+- Docker
+- kind
+- kubectl
+- Helm
+- MetalLB for LoadBalancer support inside kind
+- Prometheus + Grafana via Helm
 
 ## 6. GitHub Actions
 

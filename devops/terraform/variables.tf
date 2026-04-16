@@ -1,26 +1,11 @@
 variable "aws_region" {
   type    = string
-  default = "ap-south-1"
+  default = "us-east-2"
 }
 
 variable "project_name" {
   type    = string
   default = "sroa"
-}
-
-variable "vpc_cidr" {
-  type    = string
-  default = "10.20.0.0/16"
-}
-
-variable "public_subnet_cidr" {
-  type    = string
-  default = "10.20.1.0/24"
-}
-
-variable "availability_zone" {
-  type    = string
-  default = "ap-south-1a"
 }
 
 variable "ssh_cidr" {
@@ -30,12 +15,12 @@ variable "ssh_cidr" {
 
 variable "ami_id" {
   type        = string
-  description = "EC2 AMI ID"
+  description = "EC2 AMI ID (Ubuntu 22.04 / Amazon Linux 2023 recommended)"
 }
 
 variable "instance_type" {
   type    = string
-  default = "t3.medium"
+  default = "t3.large"
 }
 
 variable "key_name" {

@@ -1,31 +1,33 @@
-{{- if .Values.backend.enabled }}
+{{- $root := . -}}
+{{- range $service := .Values.services }}
+{{- if $service.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sroa.fullname" . }}-backend
+  name: {{ include "sroa.fullname" $root }}-{{ $service.name }}
 spec:
-  replicas: {{ .Values.backend.replicaCount }}
+  replicas: {{ $service.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "sroa.fullname" . }}-backend
+      app: {{ include "sroa.fullname" $root }}-{{ $service.name }}
   template:
     metadata:
       labels:
-        app: {{ include "sroa.fullname" . }}-backend
+        app: {{ include "sroa.fullname" $root }}-{{ $service.name }}
     spec:
       containers:
-        - name: backend
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        - name: {{ $service.name }}
+          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ $service.service.port }}
           env:
-            - name: NODE_ENV
-              value: {{ .Values.backend.env.NODE_ENV | quote }}
-            - name: PORT
-              value: {{ .Values.backend.env.PORT | quote }}
-            - name: DATABASE_URL
-              value: {{ .Values.backend.env.DATABASE_URL | quote }}
+{{- range $key, $value := $service.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+{{- end }}
           resources:
-{{ toYaml .Values.backend.resources | indent 12 }}
+{{ toYaml $service.resources | indent 12 }}
+---
+{{- end }}
 {{- end }}

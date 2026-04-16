@@ -1,0 +1,42 @@
+name: Reusable Kubernetes deploy
+
+on:
+  workflow_call:
+    inputs:
+      frontend_image_repo:
+        required: true
+        type: string
+      backend_image_repo:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.13.4
+
+      - name: Set kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install sroa devops/helm/sroa \
+            --namespace sroa --create-namespace \
+            --set frontend.image.repository=${{ inputs.frontend_image_repo }} \
+            --set frontend.image.tag=${{ inputs.image_tag }} \
+            --set backend.image.repository=${{ inputs.backend_image_repo }} \
+            --set backend.image.tag=${{ inputs.image_tag }}

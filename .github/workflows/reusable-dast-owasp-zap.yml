@@ -1,0 +1,18 @@
+name: Reusable OWASP ZAP DAST scan
+
+on:
+  workflow_call:
+    inputs:
+      target_url:
+        required: true
+        type: string
+
+jobs:
+  dast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run OWASP ZAP full scan
+        uses: zaproxy/action-full-scan@v0.7.0
+        with:
+          target: ${{ inputs.target_url }}
+          cmd_options: -config api.disablekey=true

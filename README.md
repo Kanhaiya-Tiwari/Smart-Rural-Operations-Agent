@@ -251,22 +251,132 @@ MIT
 
 ## DevOps Production Scaffold
 
-A production-oriented DevOps scaffold is available in `devops/`.
+The `devops/` directory is now aligned with the actual application architecture.
 
 Included components:
 
-1. Docker runtime files for frontend/backend (`devops/docker`)
-2. Local full-stack compose (`devops/docker-compose.yml`)
-3. Kubernetes raw manifests (`devops/k8s`)
-4. Helm chart (`devops/helm/sroa`)
-5. Terraform AWS modules (`devops/terraform`)
-6. Ansible provisioning playbook (`devops/ansible/playbook.yml`)
-7. GitHub Actions CI/CD workflows (`.github/workflows`)
+1. Docker runtime files for frontend and frontend Dockerfile (`devops/docker/frontend.Dockerfile`)
+2. Full backend microservices in `backend/<service>/Dockerfile`
+3. Local compose orchestrator for full stack (`devops/docker-compose.yml`)
+4. Kubernetes raw manifests (`devops/k8s`)
+5. Helm chart (`devops/helm/sroa`)
+6. AWS provisioning via Terraform (`devops/terraform`)
+7. Ansible host provisioning and Kind cluster setup (`devops/ansible`)
+8. GitHub Actions DevSecOps workflows (`.github/workflows`)
 
-Quick start for DevOps stack:
+### What changed
+
+- `devops/docker-compose.yml` now builds the six backend services plus frontend and local infra (Postgres, Redis, Kafka, Zookeeper).
+- Terraform now targets the AWS default VPC and includes an autoscaling group with two EC2 instances and an application load balancer.
+- `devops/ansible/playbook-kind.yml` installs Docker, kind, kubectl, Helm, MetalLB, Prometheus, and Grafana on a host in the `kind` inventory group.
+- The CI/CD pipeline now builds and scans all backend service images, not only a legacy single backend image.
+
+### Local dev with Docker Compose
+
+From repository root:
 
 ```bash
 docker compose -f devops/docker-compose.yml up -d --build
 ```
 
-For complete infra and deployment steps, see `devops/README.md`.
+Then verify:
+
+```bash
+curl -f http://localhost:3000 || true
+curl -f http://localhost:8092/health || true
+```
+
+### AWS / Terraform setup
+
+1. Copy variables:
+
+```bash
+cp devops/terraform/terraform.tfvars.example devops/terraform/terraform.tfvars
+```
+
+2. Set values in `devops/terraform/terraform.tfvars`:
+- `ami_id` (Ubuntu 22.04 or Amazon Linux 2023 recommended)
+- `key_name`
+- `ssh_cidr`
+
+3. Run:
+
+```bash
+cd devops/terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+4. Use the Terraform outputs to connect to the EC2 instances and run Ansible.
+
+### Kind cluster and monitoring
+
+Use `devops/ansible/playbook-kind.yml` against the `kind` host group in `devops/ansible/inventory.ini.example`.
+
+The playbook installs:
+- Docker
+- kind
+- kubectl
+- Helm
+- MetalLB
+- Prometheus + Grafana via Helm
+
+### GitHub Actions DevSecOps pipeline
+
+The main pipeline is in `.github/workflows/ci.yml`.
+It now runs:
+- ESLint and frontend tests
+- Bandit security scan on backend Python code
+- Hadolint Dockerfile validation for all service Dockerfiles
+- Docker image build for frontend and all backend microservices
+- Trivy vulnerability scan for all built images
+- Kubernetes deploy via Helm
+- Gmail notification after deployment
+
+### Important notes
+
+- The current application is a microservices stack. The frontend expects multiple backend services to be available on their mapped ports.
+- For a production-grade Kubernetes deployment, the frontend and backend services should be exposed through a gateway or ingress controller rather than browser port-based service URLs.
+- `devops/docker/backend.Dockerfile` is now a legacy placeholder; backend builds use the service-specific Dockerfiles under `backend/`.
+
+## GitHub Actions security and deployment pipeline
+
+This repository now has a single orchestrator workflow at `.github/workflows/ci.yml` that calls reusable jobs for:
+- frontend linting and tests
+- Python Bandit code security scanning
+- Dockerfile scanning with Hadolint
+- Docker image building
+- Docker image vulnerability scanning with Trivy
+- OWASP ZAP dynamic application security testing (DAST)
+- Kubernetes deployment via Helm
+- Gmail notification after deployment
+
+### Required repository secrets
+
+Add these secrets in GitHub Settings > Secrets and variables > Actions:
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+- `FRONTEND_IMAGE_REPO` (example: `myorg/sroa-frontend`)
+- `BACKEND_IMAGE_REPO` (example: `myorg/sroa-backend`)
+- `KUBECONFIG` (base64-encoded kubeconfig for deployment cluster)
+- `GMAIL_SMTP_USERNAME` (for example `knhapndt1@gmail.com`)
+- `GMAIL_SMTP_PASSWORD` (Gmail app password or SMTP password)
+
+### How to trigger the workflow
+
+The workflow runs automatically on `push` and `pull_request` to `main`/`master`.
+It can also be started manually from the Actions tab using `workflow_dispatch`.
+
+When manually dispatching, set:
+- `target_url` for OWASP ZAP DAST scanning
+- `image_tag` for Docker images and deployment tags
+
+### Notes for perfect setup
+
+1. Use a Gmail app password for `GMAIL_SMTP_PASSWORD`.
+2. Keep `backend/.env` secret. Do not commit it.
+3. Verify Dockerfiles at `devops/docker/frontend.Dockerfile` and `devops/docker/backend.Dockerfile` before scanning.
+4. Confirm the Kubernetes Helm values in `devops/helm/sroa/values.yaml` match your cluster and image repo.
+5. If you only need local validation, `target_url` can point to a publicly accessible staging URL.
+6. The pipeline fails if Trivy finds any `CRITICAL` or `HIGH` vulnerabilities.

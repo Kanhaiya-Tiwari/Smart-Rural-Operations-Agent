@@ -1,0 +1,30 @@
+name: Reusable Trivy image scan
+
+on:
+  workflow_call:
+    inputs:
+      images:
+        required: true
+        type: string
+
+jobs:
+  scan-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget -qO- https://github.com/aquasecurity/trivy/releases/download/v0.47.1/trivy_0.47.1_Linux-64bit.tar.gz | tar xz
+          sudo mv trivy /usr/local/bin/
+
+      - name: Scan images
+        run: |
+          set -e
+          IFS=',' read -r -a images <<< "${{ inputs.images }}"
+          for image in "${images[@]}"; do
+            echo "Scanning $image"
+            trivy image --exit-code 1 --severity CRITICAL,HIGH "$image"
+          done

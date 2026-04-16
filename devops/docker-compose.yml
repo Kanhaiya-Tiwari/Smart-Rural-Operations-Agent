@@ -1,6 +1,108 @@
-version: "3.9"
-
 services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sroa
+      POSTGRES_PASSWORD: sroa
+      POSTGRES_DB: sroa
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+  redis:
+    image: redis:7
+    ports:
+      - "6380:6379"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    depends_on:
+      - zookeeper
+    ports:
+      - "29091:29091"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  auth-service:
+    build:
+      context: ../backend/auth-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../backend/.env
+    ports:
+      - "8092:8000"
+    depends_on:
+      - postgres
+
+  user-profile-service:
+    build:
+      context: ../backend/user-profile-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../backend/.env
+    ports:
+      - "8093:8000"
+    depends_on:
+      - postgres
+
+  weather-service:
+    build:
+      context: ../backend/weather-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../backend/.env
+    ports:
+      - "8094:8000"
+    depends_on:
+      - redis
+
+  market-service:
+    build:
+      context: ../backend/market-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../backend/.env
+    ports:
+      - "8095:8000"
+    depends_on:
+      - redis
+
+  agent-service:
+    build:
+      context: ../backend/agent-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../backend/.env
+    ports:
+      - "8096:8000"
+    depends_on:
+      - kafka
+
+  notification-service:
+    build:
+      context: ../backend/notification-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../backend/.env
+    ports:
+      - "8097:8000"
+    depends_on:
+      - kafka
+      - postgres
+
   frontend:
     build:
       context: ..
@@ -9,32 +111,12 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - backend
-
-  backend:
-    build:
-      context: ..
-      dockerfile: devops/docker/backend.Dockerfile
-    image: sroa-backend:latest
-    environment:
-      NODE_ENV: production
-      PORT: 8080
-      DATABASE_URL: postgres://sroa:sroa@db:5432/sroa
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: sroa
-      POSTGRES_PASSWORD: sroa
-      POSTGRES_DB: sroa
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - auth-service
+      - user-profile-service
+      - weather-service
+      - market-service
+      - agent-service
+      - notification-service
 
 volumes:
   postgres_data:

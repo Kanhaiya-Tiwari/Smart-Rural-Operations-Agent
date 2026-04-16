@@ -1,32 +1,71 @@
-name: CI
+name: Full security, build, deploy, and notification pipeline
 
 on:
-  pull_request:
-    branches: [main, master]
   push:
     branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Target URL for OWASP ZAP DAST scan"
+        required: false
+        default: "https://example.com"
+      image_tag:
+        description: "Image tag to build and deploy"
+        required: false
+        default: "latest"
 
 jobs:
-  test-and-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  lint-and-bandit:
+    uses: ./.github/workflows/reusable-lint-bandit.yml
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
+  dockerfile-scan:
+    needs: lint-and-bandit
+    uses: ./.github/workflows/reusable-dockerfile-scan.yml
 
-      - name: Install dependencies
-        run: npm ci
+  build-images:
+    needs: dockerfile-scan
+    uses: ./.github/workflows/reusable-docker-build.yml
+    with:
+      image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Run lint
-        run: npm run lint
+  trivy-scan:
+    needs: build-images
+    uses: ./.github/workflows/reusable-trivy-scan.yml
+    with:
+      images: ${{ needs.build-images.outputs.image_list }}
 
-      - name: Run tests
-        run: npm run test -- --run
+  deploy:
+    needs: trivy-scan
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      frontend_image_repo: ${{ secrets.FRONTEND_IMAGE_REPO }}
+      backend_image_repo: ${{ secrets.BACKEND_IMAGE_REPO }}
+      image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-      - name: Build frontend
-        run: npm run build
+  dast-scan:
+    needs: deploy
+    uses: ./.github/workflows/reusable-dast-owasp-zap.yml
+    with:
+      target_url: ${{ github.event.inputs.target_url && github.event.inputs.target_url != '' && github.event.inputs.target_url || 'https://example.com' }}
+
+  notify:
+    needs: dast-scan
+    uses: ./.github/workflows/reusable-email-notify.yml
+    with:
+      recipient: "knhapndt1@gmail.com"
+      subject: "SROA deployment completed"
+      message: |
+        Deployment succeeded for tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+        DAST target: ${{ github.event.inputs.target_url && github.event.inputs.target_url != '' && github.event.inputs.target_url || 'https://example.com' }}
+        Workflow: ${{ github.workflow }}
+      from: ${{ secrets.GMAIL_SMTP_USERNAME }}
+    secrets:
+      GMAIL_SMTP_USERNAME: ${{ secrets.GMAIL_SMTP_USERNAME }}
+      GMAIL_SMTP_PASSWORD: ${{ secrets.GMAIL_SMTP_PASSWORD }}

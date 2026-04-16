@@ -18,23 +18,126 @@ frontend:
       cpu: 300m
       memory: 256Mi
 
-backend:
-  enabled: true
-  replicaCount: 2
-  image:
-    repository: your-dockerhub-user/sroa-backend
-    tag: latest
-  service:
-    type: ClusterIP
-    port: 8080
-  env:
-    NODE_ENV: production
-    PORT: "8080"
-    DATABASE_URL: postgres://sroa:sroa@db:5432/sroa
-  resources:
-    requests:
-      cpu: 150m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
+services:
+  - name: auth-service
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: your-dockerhub-user/sroa-auth-service
+      tag: latest
+    service:
+      type: ClusterIP
+      port: 8000
+    env:
+      NODE_ENV: production
+      PORT: "8000"
+      DATABASE_URL: postgres://sroa:sroa@postgres:5432/sroa
+    resources:
+      requests:
+        cpu: 150m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  - name: user-profile-service
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: your-dockerhub-user/sroa-user-profile-service
+      tag: latest
+    service:
+      type: ClusterIP
+      port: 8000
+    env:
+      NODE_ENV: production
+      PORT: "8000"
+      DATABASE_URL: postgres://sroa:sroa@postgres:5432/sroa
+    resources:
+      requests:
+        cpu: 150m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  - name: weather-service
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: your-dockerhub-user/sroa-weather-service
+      tag: latest
+    service:
+      type: ClusterIP
+      port: 8000
+    env:
+      NODE_ENV: production
+      PORT: "8000"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+
+  - name: market-service
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: your-dockerhub-user/sroa-market-service
+      tag: latest
+    service:
+      type: ClusterIP
+      port: 8000
+    env:
+      NODE_ENV: production
+      PORT: "8000"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+
+  - name: agent-service
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: your-dockerhub-user/sroa-agent-service
+      tag: latest
+    service:
+      type: ClusterIP
+      port: 8000
+    env:
+      NODE_ENV: production
+      PORT: "8000"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+
+  - name: notification-service
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: your-dockerhub-user/sroa-notification-service
+      tag: latest
+    service:
+      type: ClusterIP
+      port: 8000
+    env:
+      NODE_ENV: production
+      PORT: "8000"
+      DATABASE_URL: postgres://sroa:sroa@postgres:5432/sroa
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi

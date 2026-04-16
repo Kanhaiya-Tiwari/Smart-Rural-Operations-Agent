@@ -1,0 +1,42 @@
+name: Reusable Docker build
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: false
+        default: ${{ github.sha }}
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    outputs:
+      image_list: ${{ steps.set-outputs.outputs.image_list }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend image
+        run: docker build -t sroa-frontend:${{ inputs.image_tag }} -f devops/docker/frontend.Dockerfile .
+
+      - name: Build auth-service image
+        run: docker build -t sroa-auth-service:${{ inputs.image_tag }} -f backend/auth-service/Dockerfile backend/auth-service
+
+      - name: Build user-profile-service image
+        run: docker build -t sroa-user-profile-service:${{ inputs.image_tag }} -f backend/user-profile-service/Dockerfile backend/user-profile-service
+
+      - name: Build weather-service image
+        run: docker build -t sroa-weather-service:${{ inputs.image_tag }} -f backend/weather-service/Dockerfile backend/weather-service
+
+      - name: Build market-service image
+        run: docker build -t sroa-market-service:${{ inputs.image_tag }} -f backend/market-service/Dockerfile backend/market-service
+
+      - name: Build agent-service image
+        run: docker build -t sroa-agent-service:${{ inputs.image_tag }} -f backend/agent-service/Dockerfile backend/agent-service
+
+      - name: Build notification-service image
+        run: docker build -t sroa-notification-service:${{ inputs.image_tag }} -f backend/notification-service/Dockerfile backend/notification-service
+
+      - name: Output image list
+        id: set-outputs
+        run: |
+          echo "image_list=sroa-frontend:${{ inputs.image_tag }},sroa-auth-service:${{ inputs.image_tag }},sroa-user-profile-service:${{ inputs.image_tag }},sroa-weather-service:${{ inputs.image_tag }},sroa-market-service:${{ inputs.image_tag }},sroa-agent-service:${{ inputs.image_tag }},sroa-notification-service:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT

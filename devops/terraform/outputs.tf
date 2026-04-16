@@ -1,15 +1,19 @@
-output "vpc_id" {
-  value = module.vpc.vpc_id
+output "default_vpc_id" {
+  value = data.aws_vpc.default.id
 }
 
-output "public_subnet_id" {
-  value = module.vpc.public_subnet_id
+output "default_public_subnet_ids" {
+  value = sort(data.aws_subnets.default.ids)
 }
 
-output "ec2_public_ip" {
-  value = module.ec2.public_ip
+output "load_balancer_dns_name" {
+  value = aws_lb.app.dns_name
 }
 
-output "ec2_instance_id" {
-  value = module.ec2.instance_id
+output "autoscaling_group_name" {
+  value = aws_autoscaling_group.app.name
+}
+
+output "autoscaling_group_arn" {
+  value = aws_autoscaling_group.app.arn
 }
