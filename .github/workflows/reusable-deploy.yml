@@ -14,11 +14,18 @@ on:
         type: string
     secrets:
       KUBECONFIG:
-        required: true
+        required: false
+      EC2_SSH_KEY:
+        required: false
+      EC2_HOST:
+        required: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      KUBECONFIG_SECRET: ${{ secrets.KUBECONFIG }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,10 +37,21 @@ jobs:
         with:
           version: v3.16.0
 
-      - name: Set kubeconfig
+      - name: Get kubeconfig from EC2 Kind cluster
+        if: env.EC2_HOST != ''
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+          ssh ubuntu@$EC2_HOST "kind get kubeconfig --name kind" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Set kubeconfig from secret
+        if: env.KUBECONFIG_SECRET != ''
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          echo "$KUBECONFIG_SECRET" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
       - name: Deploy with Helm

@@ -27,3 +27,14 @@ variable "key_name" {
   type        = string
   description = "Existing AWS key pair name"
 }
+
+variable "dockerhub_username" {
+  type        = string
+  description = "DockerHub username"
+}
+
+variable "dockerhub_password" {
+  type        = string
+  description = "DockerHub password/token"
+  sensitive   = true
+}

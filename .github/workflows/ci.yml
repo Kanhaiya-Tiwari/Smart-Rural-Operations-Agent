@@ -40,17 +40,32 @@ jobs:
     with:
       images: ${{ needs.build-images.outputs.image_list }}
 
-  deploy:
+  terraform-infra:
     needs: trivy-scan
-    uses: ./.github/workflows/reusable-docker-compose-deploy.yml
+    uses: ./.github/workflows/reusable-terraform-infra.yml
+    with:
+      aws_region: ${{ vars.AWS_REGION || 'us-east-2' }}
+      ami_id: ${{ vars.AWS_AMI_ID }}
+      instance_type: ${{ vars.AWS_INSTANCE_TYPE || 't3.large' }}
+      key_name: ${{ vars.AWS_KEY_NAME }}
+      ssh_cidr: ${{ vars.AWS_SSH_CIDR || '0.0.0.0/0' }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  deploy:
+    needs: terraform-infra
+    uses: ./.github/workflows/reusable-deploy.yml
     with:
       frontend_image_repo: ${{ vars.FRONTEND_IMAGE_REPO }}
       backend_image_repo: ${{ vars.BACKEND_IMAGE_REPO }}
       image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
-      deploy_host: ${{ vars.DEPLOY_HOST || '' }}
-      deploy_user: ${{ vars.DEPLOY_USER || '' }}
     secrets:
-      deploy_key: ${{ secrets.DEPLOY_SSH_KEY || '' }}
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      EC2_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
+      EC2_HOST: ${{ needs.terraform-infra.outputs.ec2_public_ip || '' }}
 
   dast-scan:
     needs: deploy

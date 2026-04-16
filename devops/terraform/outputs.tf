@@ -6,14 +6,12 @@ output "default_public_subnet_ids" {
   value = sort(data.aws_subnets.default.ids)
 }
 
-output "load_balancer_dns_name" {
-  value = aws_lb.app.dns_name
+output "ec2_public_ip" {
+  description = "EC2 instance public IP"
+  value       = aws_eip.app.public_ip
 }
 
-output "autoscaling_group_name" {
-  value = aws_autoscaling_group.app.name
-}
-
-output "autoscaling_group_arn" {
-  value = aws_autoscaling_group.app.arn
+output "ec2_public_dns" {
+  description = "EC2 instance public DNS"
+  value       = aws_instance.app.public_dns
 }
