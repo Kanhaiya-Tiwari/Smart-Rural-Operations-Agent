@@ -38,6 +38,8 @@ on:
         required: true
       DOCKERHUB_PASSWORD:
         required: true
+      AWS_SSH_KEY:
+        required: false
     outputs:
       ec2_public_ip:
         value: ${{ jobs.terraform.outputs.ec2_public_ip }}
@@ -88,6 +90,30 @@ jobs:
       - name: Terraform Apply
         if: inputs.destroy == false
         run: terraform apply -auto-approve tfplan
+
+      - name: Wait for EC2 instance to be ready
+        if: inputs.destroy == false
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY || secrets.AWS_SSH_KEY }}
+        run: |
+          PUBLIC_IP=$(terraform output -raw ec2_public_ip)
+          echo "Waiting for EC2 instance at $PUBLIC_IP to be ready..."
+          
+          # Setup SSH
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $PUBLIC_IP >> ~/.ssh/known_hosts
+          
+          # Wait for EC2
+          for i in {1..60}; do
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$PUBLIC_IP "echo 'EC2 is ready'" 2>/dev/null; then
+              echo "EC2 instance is ready!"
+              break
+            fi
+            echo "Attempt $i/60: EC2 not ready yet, waiting 10 seconds..."
+            sleep 10
+          done
 
       - name: Terraform Destroy
         if: inputs.destroy == true

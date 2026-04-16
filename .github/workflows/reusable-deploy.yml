@@ -44,8 +44,28 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+          
+          # Wait for EC2 to be ready and Kind cluster to be set up
+          echo "Waiting for EC2 instance and Kind cluster to be ready..."
+          for i in {1..30}; do
+            if ssh ubuntu@$EC2_HOST "kind get clusters" 2>/dev/null; then
+              echo "Kind cluster is ready!"
+              break
+            fi
+            echo "Attempt $i/30: Kind cluster not ready yet, waiting 10 seconds..."
+            sleep 10
+          done
+          
+          # Get kubeconfig
+          mkdir -p ~/.kube
           ssh ubuntu@$EC2_HOST "kind get kubeconfig --name kind" > ~/.kube/config
           chmod 600 ~/.kube/config
+          
+          # Verify kubeconfig
+          if [ ! -s ~/.kube/config ]; then
+            echo "Error: kubeconfig is empty!"
+            exit 1
+          fi
 
       - name: Set kubeconfig from secret
         if: env.KUBECONFIG_SECRET != ''

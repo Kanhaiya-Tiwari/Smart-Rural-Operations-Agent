@@ -52,6 +52,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+      AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
 
   deploy:
     needs: terraform-infra
