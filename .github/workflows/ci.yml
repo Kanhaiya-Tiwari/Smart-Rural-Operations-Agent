@@ -29,9 +29,6 @@ jobs:
     uses: ./.github/workflows/reusable-docker-build.yml
     with:
       image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   trivy-scan:
     needs: build-images
