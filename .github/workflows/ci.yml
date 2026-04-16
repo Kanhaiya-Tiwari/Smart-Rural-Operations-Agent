@@ -54,24 +54,12 @@ jobs:
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
       AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
 
-  deploy:
-    needs: terraform-infra
-    uses: ./.github/workflows/reusable-deploy.yml
-    with:
-      frontend_image_repo: ${{ vars.FRONTEND_IMAGE_REPO || 'kanhaiyatiwari/sroa-frontend' }}
-      backend_image_repo: ${{ vars.BACKEND_IMAGE_REPO || 'kanhaiyatiwari/sroa-backend' }}
-      image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
-      EC2_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
-      EC2_HOST: ${{ needs.terraform-infra.outputs.ec2_public_ip || '' }}
-
   dast-scan:
-    needs: deploy
+    needs: terraform-infra
     if: success() || failure()
     uses: ./.github/workflows/reusable-dast-owasp-zap.yml
     with:
-      target_url: ${{ github.event.inputs.target_url && github.event.inputs.target_url != '' && github.event.inputs.target_url || 'https://example.com' }}
+      target_url: ${{ format('http://{0}:3000', needs.terraform-infra.outputs.ec2_public_ip) }}
 
   notify:
     needs: dast-scan

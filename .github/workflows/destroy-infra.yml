@@ -1,0 +1,77 @@
+name: Auto-destroy infrastructure
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every hour to check for old infrastructure
+    - cron: '0 * * * *'
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-2' }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: |
+          cd devops/terraform
+          terraform init
+
+      - name: Check instance age
+        id: check_age
+        run: |
+          cd devops/terraform
+          INSTANCE_IDS=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=sroa-kind-cluster*" --query "Reservations[].Instances[].InstanceId" --output text)
+          
+          if [ -z "$INSTANCE_IDS" ]; then
+            echo "No instances found, nothing to destroy"
+            echo "should_destroy=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check if any instance is older than 2 hours
+          TWO_HOURS_AGO=$(date -u -d '2 hours ago' +%s)
+          SHOULD_DESTROY=false
+          
+          for INSTANCE_ID in $INSTANCE_IDS; do
+            LAUNCH_TIME=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[].Instances[].LaunchTime" --output text)
+            LAUNCH_TIMESTAMP=$(date -d "$LAUNCH_TIME" +%s)
+            
+            if [ $LAUNCH_TIMESTAMP -lt $TWO_HOURS_AGO ]; then
+              echo "Instance $INSTANCE_ID is older than 2 hours"
+              SHOULD_DESTROY=true
+            fi
+          done
+          
+          echo "should_destroy=$SHOULD_DESTROY" >> $GITHUB_OUTPUT
+
+      - name: Terraform Destroy
+        if: steps.check_age.outputs.should_destroy == 'true'
+        run: |
+          cd devops/terraform
+          terraform destroy -auto-approve
+        env:
+          TF_VAR_aws_region: ${{ vars.AWS_REGION || 'us-east-2' }}
+          TF_VAR_project_name: sroa
+          TF_VAR_ami_id: ""
+          TF_VAR_instance_type: t3.micro
+          TF_VAR_key_name: ${{ vars.AWS_KEY_NAME }}
+          TF_VAR_ssh_cidr: ${{ vars.AWS_SSH_CIDR || '0.0.0.0/0' }}
+          TF_VAR_dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          TF_VAR_dockerhub_password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Notify destruction
+        if: steps.check_age.outputs.should_destroy == 'true'
+        run: echo "Infrastructure destroyed successfully (older than 2 hours)"
