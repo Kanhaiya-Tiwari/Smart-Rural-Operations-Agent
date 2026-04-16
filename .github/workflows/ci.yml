@@ -1,6 +1,8 @@
 name: Full security, build, deploy, and notification pipeline
 
 on:
+  push:
+    branches: [main, master]
   workflow_dispatch:
     inputs:
       target_url:
