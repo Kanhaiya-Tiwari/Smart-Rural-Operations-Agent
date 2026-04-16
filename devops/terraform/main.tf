@@ -31,6 +31,13 @@ data "aws_vpc" "default" {
   default = true
 }
 
+data "aws_instances" "existing" {
+  filter {
+    name   = "tag:Name"
+    values = ["${var.project_name}-kind-cluster*"]
+  }
+}
+
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -50,6 +57,7 @@ module "security_group" {
 }
 
 resource "aws_instance" "app" {
+  count                  = length(data.aws_instances.existing.ids) > 0 ? 0 : 1
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   key_name               = var.key_name
@@ -66,10 +74,17 @@ resource "aws_instance" "app" {
 }
 
 resource "aws_eip" "app" {
-  instance = aws_instance.app.id
+  count    = length(data.aws_instances.existing.ids) > 0 ? 0 : 1
+  instance = aws_instance.app[0].id
   domain   = "vpc"
 
   tags = {
     Name = "${var.project_name}-eip"
   }
+}
+
+# Get existing instance details if they exist
+data "aws_instance" "existing_app" {
+  count = length(data.aws_instances.existing.ids) > 0 ? 1 : 0
+  instance_id = data.aws_instances.existing.ids[0]
 }

@@ -50,7 +50,7 @@ jobs:
     outputs:
       ec2_public_ip: ${{ steps.outputs.outputs.public_ip }}
     env:
-      TF_VAR_project_name: ${{ inputs.project_name }}-${{ github.run_number }}
+      TF_VAR_project_name: ${{ inputs.project_name }}
     defaults:
       run:
         working-directory: devops/terraform
@@ -132,9 +132,15 @@ jobs:
         id: outputs
         run: |
           PUBLIC_IP=$(terraform output -raw ec2_public_ip)
+          EXISTING=$(terraform output -raw existing_instances)
           echo "public_ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
           echo "## 🌐 EC2 Instance Details" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "- **Status:** ✅ Using existing EC2 instance" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status:** 🆕 Created new EC2 instance" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- **Public IP:** \`$PUBLIC_IP\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Kind Cluster:** Running on port 80/443" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

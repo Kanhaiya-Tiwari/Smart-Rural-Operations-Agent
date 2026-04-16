@@ -243,7 +243,7 @@ const Notifications = () => {
         ts: Date.now(),
       },
     ];
-  }, [localAlerts, alerts, iconByType]);
+  }, [localAlerts, alerts]);
 
   const filteredAlerts = useMemo(() => {
     if (feedFilter === "all") return mappedAlerts;

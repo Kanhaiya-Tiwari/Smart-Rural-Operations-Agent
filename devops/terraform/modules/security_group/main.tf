@@ -28,17 +28,17 @@ resource "aws_security_group" "this" {
   }
 
   ingress {
-    description = "App Frontend"
-    from_port   = 5173
-    to_port     = 5174
+    description = "Frontend (3000)"
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    description = "Backend API"
-    from_port   = 8000
-    to_port     = 8010
+    description = "Backend Services (8092-8097)"
+    from_port   = 8092
+    to_port     = 8097
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
