@@ -7,8 +7,9 @@ on:
         required: true
         type: string
       ami_id:
-        required: true
+        required: false
         type: string
+        default: ""
       instance_type:
         required: false
         type: string

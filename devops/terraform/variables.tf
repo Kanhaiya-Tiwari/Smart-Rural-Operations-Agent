@@ -15,7 +15,8 @@ variable "ssh_cidr" {
 
 variable "ami_id" {
   type        = string
-  description = "EC2 AMI ID (Ubuntu 22.04 / Amazon Linux 2023 recommended)"
+  description = "EC2 AMI ID (optional, will auto-fetch latest Ubuntu 22.04 if not provided)"
+  default     = ""
 }
 
 variable "instance_type" {

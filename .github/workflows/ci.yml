@@ -45,7 +45,7 @@ jobs:
     uses: ./.github/workflows/reusable-terraform-infra.yml
     with:
       aws_region: ${{ vars.AWS_REGION || 'us-east-2' }}
-      ami_id: ${{ vars.AWS_AMI_ID }}
+      ami_id: ${{ vars.AWS_AMI_ID || '' }}
       instance_type: ${{ vars.AWS_INSTANCE_TYPE || 't3.large' }}
       key_name: ${{ vars.AWS_KEY_NAME }}
       ssh_cidr: ${{ vars.AWS_SSH_CIDR || '0.0.0.0/0' }}
