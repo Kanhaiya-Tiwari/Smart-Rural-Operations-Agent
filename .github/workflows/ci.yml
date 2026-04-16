@@ -48,12 +48,14 @@ jobs:
 
   dast-scan:
     needs: deploy
+    if: success() || failure()
     uses: ./.github/workflows/reusable-dast-owasp-zap.yml
     with:
       target_url: ${{ github.event.inputs.target_url && github.event.inputs.target_url != '' && github.event.inputs.target_url || 'https://example.com' }}
 
   notify:
     needs: dast-scan
+    if: success() || failure()
     uses: ./.github/workflows/reusable-email-notify.yml
     with:
       recipient: "knhapndt1@gmail.com"

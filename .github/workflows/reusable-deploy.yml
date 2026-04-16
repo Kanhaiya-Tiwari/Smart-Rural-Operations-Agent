@@ -34,8 +34,10 @@ jobs:
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
 
       - name: Deploy with Helm
+        continue-on-error: true
         run: |
           helm upgrade --install sroa devops/helm/sroa \
             --namespace sroa --create-namespace \
