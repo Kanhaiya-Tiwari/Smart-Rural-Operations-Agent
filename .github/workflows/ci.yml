@@ -21,14 +21,18 @@ jobs:
     uses: ./.github/workflows/reusable-lint-bandit.yml
 
   dockerfile-scan:
-    needs: lint-and-bandit
     uses: ./.github/workflows/reusable-dockerfile-scan.yml
 
   build-images:
-    needs: dockerfile-scan
+    needs: [lint-and-bandit, dockerfile-scan]
     uses: ./.github/workflows/reusable-docker-build.yml
     with:
       image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      FRONTEND_IMAGE_REPO: ${{ vars.FRONTEND_IMAGE_REPO }}
+      BACKEND_IMAGE_REPO: ${{ vars.BACKEND_IMAGE_REPO }}
 
   trivy-scan:
     needs: build-images
@@ -38,13 +42,15 @@ jobs:
 
   deploy:
     needs: trivy-scan
-    uses: ./.github/workflows/reusable-deploy.yml
+    uses: ./.github/workflows/reusable-docker-compose-deploy.yml
     with:
-      frontend_image_repo: ${{ vars.FRONTEND_IMAGE_REPO || 'your-dockerhub-username/sroa-frontend' }}
-      backend_image_repo: ${{ vars.BACKEND_IMAGE_REPO || 'your-dockerhub-username/sroa-backend' }}
+      frontend_image_repo: ${{ vars.FRONTEND_IMAGE_REPO }}
+      backend_image_repo: ${{ vars.BACKEND_IMAGE_REPO }}
       image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+      deploy_host: ${{ vars.DEPLOY_HOST || '' }}
+      deploy_user: ${{ vars.DEPLOY_USER || '' }}
     secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      deploy_key: ${{ secrets.DEPLOY_SSH_KEY || '' }}
 
   dast-scan:
     needs: deploy

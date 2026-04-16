@@ -7,6 +7,15 @@ on:
         required: false
         type: string
         default: ${{ github.sha }}
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+      FRONTEND_IMAGE_REPO:
+        required: true
+      BACKEND_IMAGE_REPO:
+        required: true
 
 jobs:
   build-images:
@@ -16,28 +25,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build frontend image
-        run: docker build -t sroa-frontend:${{ inputs.image_tag }} -f devops/docker/frontend.Dockerfile .
+        run: docker build -t ${{ secrets.FRONTEND_IMAGE_REPO }}:${{ inputs.image_tag }} -f devops/docker/frontend.Dockerfile .
 
       - name: Build auth-service image
-        run: docker build -t sroa-auth-service:${{ inputs.image_tag }} -f backend/auth-service/Dockerfile backend/auth-service
+        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-auth:${{ inputs.image_tag }} -f backend/auth-service/Dockerfile backend/auth-service
 
       - name: Build user-profile-service image
-        run: docker build -t sroa-user-profile-service:${{ inputs.image_tag }} -f backend/user-profile-service/Dockerfile backend/user-profile-service
+        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-user-profile:${{ inputs.image_tag }} -f backend/user-profile-service/Dockerfile backend/user-profile-service
 
       - name: Build weather-service image
-        run: docker build -t sroa-weather-service:${{ inputs.image_tag }} -f backend/weather-service/Dockerfile backend/weather-service
+        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-weather:${{ inputs.image_tag }} -f backend/weather-service/Dockerfile backend/weather-service
 
       - name: Build market-service image
-        run: docker build -t sroa-market-service:${{ inputs.image_tag }} -f backend/market-service/Dockerfile backend/market-service
+        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-market:${{ inputs.image_tag }} -f backend/market-service/Dockerfile backend/market-service
 
       - name: Build agent-service image
-        run: docker build -t sroa-agent-service:${{ inputs.image_tag }} -f backend/agent-service/Dockerfile backend/agent-service
+        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-agent:${{ inputs.image_tag }} -f backend/agent-service/Dockerfile backend/agent-service
 
       - name: Build notification-service image
-        run: docker build -t sroa-notification-service:${{ inputs.image_tag }} -f backend/notification-service/Dockerfile backend/notification-service
+        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-notification:${{ inputs.image_tag }} -f backend/notification-service/Dockerfile backend/notification-service
+
+      - name: Push frontend image
+        run: docker push ${{ secrets.FRONTEND_IMAGE_REPO }}:${{ inputs.image_tag }}
+
+      - name: Push backend images
+        run: |
+          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-auth:${{ inputs.image_tag }}
+          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-user-profile:${{ inputs.image_tag }}
+          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-weather:${{ inputs.image_tag }}
+          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-market:${{ inputs.image_tag }}
+          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-agent:${{ inputs.image_tag }}
+          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-notification:${{ inputs.image_tag }}
 
       - name: Output image list
         id: set-outputs
         run: |
-          echo "image_list=sroa-frontend:${{ inputs.image_tag }},sroa-auth-service:${{ inputs.image_tag }},sroa-user-profile-service:${{ inputs.image_tag }},sroa-weather-service:${{ inputs.image_tag }},sroa-market-service:${{ inputs.image_tag }},sroa-agent-service:${{ inputs.image_tag }},sroa-notification-service:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          echo "image_list=${{ secrets.FRONTEND_IMAGE_REPO }}:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-auth:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-user-profile:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-weather:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-market:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-agent:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-notification:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
