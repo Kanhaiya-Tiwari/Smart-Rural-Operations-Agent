@@ -43,8 +43,8 @@ jobs:
     needs: trivy-scan
     uses: ./.github/workflows/reusable-deploy.yml
     with:
-      frontend_image_repo: ${{ secrets.FRONTEND_IMAGE_REPO }}
-      backend_image_repo: ${{ secrets.BACKEND_IMAGE_REPO }}
+      frontend_image_repo: ${{ vars.FRONTEND_IMAGE_REPO || 'your-dockerhub-username/sroa-frontend' }}
+      backend_image_repo: ${{ vars.BACKEND_IMAGE_REPO || 'your-dockerhub-username/sroa-backend' }}
       image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}
@@ -65,7 +65,7 @@ jobs:
         Deployment succeeded for tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
         DAST target: ${{ github.event.inputs.target_url && github.event.inputs.target_url != '' && github.event.inputs.target_url || 'https://example.com' }}
         Workflow: ${{ github.workflow }}
-      from: ${{ secrets.GMAIL_SMTP_USERNAME }}
+      from: ${{ vars.GMAIL_SMTP_USERNAME || 'your-email@gmail.com' }}
     secrets:
       GMAIL_SMTP_USERNAME: ${{ secrets.GMAIL_SMTP_USERNAME }}
       GMAIL_SMTP_PASSWORD: ${{ secrets.GMAIL_SMTP_PASSWORD }}
