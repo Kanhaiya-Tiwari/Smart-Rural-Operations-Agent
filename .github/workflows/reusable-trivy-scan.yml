@@ -13,16 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Trivy
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.56.0/trivy_0.56.0_Linux-64bit.tar.gz
-          tar -xzf trivy_0.56.0_Linux-64bit.tar.gz
-          sudo mv trivy /usr/local/bin/
-          rm trivy_0.56.0_Linux-64bit.tar.gz
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
 
-      - name: Scan images
+      - name: Scan Docker images
         run: |
           set -e
           IFS=',' read -r -a images <<< "${{ inputs.images }}"
