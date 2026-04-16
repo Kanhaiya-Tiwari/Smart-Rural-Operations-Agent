@@ -28,11 +28,11 @@ jobs:
     uses: ./.github/workflows/reusable-docker-build.yml
     with:
       image_tag: ${{ github.event.inputs.image_tag && github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+      frontend_image_repo: ${{ vars.FRONTEND_IMAGE_REPO }}
+      backend_image_repo: ${{ vars.BACKEND_IMAGE_REPO }}
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      FRONTEND_IMAGE_REPO: ${{ vars.FRONTEND_IMAGE_REPO }}
-      BACKEND_IMAGE_REPO: ${{ vars.BACKEND_IMAGE_REPO }}
 
   trivy-scan:
     needs: build-images

@@ -7,14 +7,16 @@ on:
         required: false
         type: string
         default: ${{ github.sha }}
+      frontend_image_repo:
+        required: true
+        type: string
+      backend_image_repo:
+        required: true
+        type: string
     secrets:
       DOCKERHUB_USERNAME:
         required: true
       DOCKERHUB_TOKEN:
-        required: true
-      FRONTEND_IMAGE_REPO:
-        required: true
-      BACKEND_IMAGE_REPO:
         required: true
 
 jobs:
@@ -32,39 +34,39 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build frontend image
-        run: docker build -t ${{ secrets.FRONTEND_IMAGE_REPO }}:${{ inputs.image_tag }} -f devops/docker/frontend.Dockerfile .
+        run: docker build -t ${{ inputs.frontend_image_repo }}:${{ inputs.image_tag }} -f devops/docker/frontend.Dockerfile .
 
       - name: Build auth-service image
-        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-auth:${{ inputs.image_tag }} -f backend/auth-service/Dockerfile backend/auth-service
+        run: docker build -t ${{ inputs.backend_image_repo }}-auth:${{ inputs.image_tag }} -f backend/auth-service/Dockerfile backend/auth-service
 
       - name: Build user-profile-service image
-        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-user-profile:${{ inputs.image_tag }} -f backend/user-profile-service/Dockerfile backend/user-profile-service
+        run: docker build -t ${{ inputs.backend_image_repo }}-user-profile:${{ inputs.image_tag }} -f backend/user-profile-service/Dockerfile backend/user-profile-service
 
       - name: Build weather-service image
-        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-weather:${{ inputs.image_tag }} -f backend/weather-service/Dockerfile backend/weather-service
+        run: docker build -t ${{ inputs.backend_image_repo }}-weather:${{ inputs.image_tag }} -f backend/weather-service/Dockerfile backend/weather-service
 
       - name: Build market-service image
-        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-market:${{ inputs.image_tag }} -f backend/market-service/Dockerfile backend/market-service
+        run: docker build -t ${{ inputs.backend_image_repo }}-market:${{ inputs.image_tag }} -f backend/market-service/Dockerfile backend/market-service
 
       - name: Build agent-service image
-        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-agent:${{ inputs.image_tag }} -f backend/agent-service/Dockerfile backend/agent-service
+        run: docker build -t ${{ inputs.backend_image_repo }}-agent:${{ inputs.image_tag }} -f backend/agent-service/Dockerfile backend/agent-service
 
       - name: Build notification-service image
-        run: docker build -t ${{ secrets.BACKEND_IMAGE_REPO }}-notification:${{ inputs.image_tag }} -f backend/notification-service/Dockerfile backend/notification-service
+        run: docker build -t ${{ inputs.backend_image_repo }}-notification:${{ inputs.image_tag }} -f backend/notification-service/Dockerfile backend/notification-service
 
       - name: Push frontend image
-        run: docker push ${{ secrets.FRONTEND_IMAGE_REPO }}:${{ inputs.image_tag }}
+        run: docker push ${{ inputs.frontend_image_repo }}:${{ inputs.image_tag }}
 
       - name: Push backend images
         run: |
-          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-auth:${{ inputs.image_tag }}
-          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-user-profile:${{ inputs.image_tag }}
-          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-weather:${{ inputs.image_tag }}
-          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-market:${{ inputs.image_tag }}
-          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-agent:${{ inputs.image_tag }}
-          docker push ${{ secrets.BACKEND_IMAGE_REPO }}-notification:${{ inputs.image_tag }}
+          docker push ${{ inputs.backend_image_repo }}-auth:${{ inputs.image_tag }}
+          docker push ${{ inputs.backend_image_repo }}-user-profile:${{ inputs.image_tag }}
+          docker push ${{ inputs.backend_image_repo }}-weather:${{ inputs.image_tag }}
+          docker push ${{ inputs.backend_image_repo }}-market:${{ inputs.image_tag }}
+          docker push ${{ inputs.backend_image_repo }}-agent:${{ inputs.image_tag }}
+          docker push ${{ inputs.backend_image_repo }}-notification:${{ inputs.image_tag }}
 
       - name: Output image list
         id: set-outputs
         run: |
-          echo "image_list=${{ secrets.FRONTEND_IMAGE_REPO }}:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-auth:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-user-profile:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-weather:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-market:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-agent:${{ inputs.image_tag }},${{ secrets.BACKEND_IMAGE_REPO }}-notification:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          echo "image_list=${{ inputs.frontend_image_repo }}:${{ inputs.image_tag }},${{ inputs.backend_image_repo }}-auth:${{ inputs.image_tag }},${{ inputs.backend_image_repo }}-user-profile:${{ inputs.image_tag }},${{ inputs.backend_image_repo }}-weather:${{ inputs.image_tag }},${{ inputs.backend_image_repo }}-market:${{ inputs.image_tag }},${{ inputs.backend_image_repo }}-agent:${{ inputs.image_tag }},${{ inputs.backend_image_repo }}-notification:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
