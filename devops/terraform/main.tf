@@ -31,6 +31,13 @@ data "aws_vpc" "default" {
   default = true
 }
 
+data "aws_security_groups" "existing" {
+  filter {
+    name   = "group-name"
+    values = ["${var.project_name}-sg"]
+  }
+}
+
 data "aws_instances" "existing" {
   filter {
     name   = "tag:Name"
@@ -50,10 +57,17 @@ data "aws_subnets" "default" {
 }
 
 module "security_group" {
+  count        = length(data.aws_security_groups.existing.ids) > 0 ? 0 : 1
   source       = "./modules/security_group"
   vpc_id       = data.aws_vpc.default.id
   project_name = var.project_name
   ssh_cidr     = var.ssh_cidr
+}
+
+# Use existing security group if it exists
+data "aws_security_group" "existing_sg" {
+  count = length(data.aws_security_groups.existing.ids) > 0 ? 1 : 0
+  id    = data.aws_security_groups.existing.ids[0]
 }
 
 resource "aws_instance" "app" {
@@ -62,7 +76,7 @@ resource "aws_instance" "app" {
   instance_type          = var.instance_type
   key_name               = var.key_name
   subnet_id              = data.aws_subnets.default.ids[0]
-  vpc_security_group_ids = [module.security_group.security_group_id]
+  vpc_security_group_ids = length(data.aws_security_groups.existing.ids) > 0 ? [data.aws_security_group.existing_sg[0].id] : [module.security_group[0].security_group_id]
   user_data              = templatefile("${path.module}/user-data.sh", {
     dockerhub_username = var.dockerhub_username
     dockerhub_password = var.dockerhub_password
