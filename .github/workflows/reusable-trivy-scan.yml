@@ -17,8 +17,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y wget
-          wget -qO- https://github.com/aquasecurity/trivy/releases/download/v0.47.1/trivy_0.47.1_Linux-64bit.tar.gz | tar xz
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.47.1/trivy_0.47.1_Linux-64bit.tar.gz
+          tar -xzf trivy_0.47.1_Linux-64bit.tar.gz
           sudo mv trivy /usr/local/bin/
+          rm trivy_0.47.1_Linux-64bit.tar.gz
 
       - name: Scan images
         run: |
