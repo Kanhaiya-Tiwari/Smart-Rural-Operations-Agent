@@ -49,8 +49,28 @@ app.add_middleware(
 )
 
 
+class MockRedis:
+    def __init__(self):
+        self._data = {}
+        print("Using MockRedis (No Redis server detected)")
+
+    def get(self, key):
+        return self._data.get(key)
+
+    def set(self, key, value, *args, **kwargs):
+        self._data[key] = value
+
+    def setex(self, key, time, value):
+        self._data[key] = value
+
+
 def get_redis_client() -> redis.Redis:
-    return redis.Redis.from_url(REDIS_URL, decode_responses=True)
+    try:
+        client = redis.Redis.from_url(REDIS_URL, decode_responses=True, socket_connect_timeout=2)
+        client.ping()
+        return client
+    except Exception:
+        return MockRedis()  # type: ignore
 
 
 def commodity_candidates(crop: str) -> list[str]:
@@ -113,15 +133,12 @@ def parse_arrival_date(value: str | None) -> str:
 
 def fetch_records(params: dict) -> list[dict]:
     try:
-        resp = httpx.get(AGMARKNET_ENDPOINT, params=params, timeout=10)
-    except httpx.HTTPError:
-        raise HTTPException(status_code=502, detail="Failed to fetch live mandi data")
-
-    if resp.status_code != 200:
-        raise HTTPException(status_code=502, detail=f"mandi provider error: {resp.text}")
-
-    data = resp.json()
-    return data.get("records") or []
+        resp = httpx.get(AGMARKNET_ENDPOINT, params=params, timeout=5)
+        if resp.status_code == 200:
+            return resp.json().get("records") or []
+    except Exception as e:
+        print(f"Mandi API error: {e}")
+    return []
 
 
 def fetch_records_public(params: dict) -> list[dict]:
@@ -238,7 +255,10 @@ def market_price(crop: str = Query(...), location: str = Query(...)):
                     break
 
     if latest is None:
-        raise HTTPException(status_code=404, detail="No live mandi records found for crop/location")
+        # Final fallback to estimated data if no live records found (or API failed)
+        estimated = estimate_market_price(crop, location)
+        client.setex(key, CACHE_TTL_SECONDS, json.dumps(estimated))
+        return estimated
 
     market_name = latest.get("market") or f"{district_name} Mandi"
     district = latest.get("district") or district_name

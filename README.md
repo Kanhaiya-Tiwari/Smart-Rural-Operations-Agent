@@ -25,7 +25,7 @@ Top-level:
 
 1. `src/` - frontend app (React + TypeScript)
 2. `backend/` - microservices, infra, db schema, compose, k8s, monitoring
-3. `supabase/functions/sroa-chat/` - edge chat function
+3. `backend/agent-service/app/chat.py` - local LangChain + Ollama chat endpoint
 
 Backend services:
 
@@ -33,7 +33,7 @@ Backend services:
 2. `backend/user-profile-service` - profile CRUD + preferences
 3. `backend/weather-service` - weather API aggregation + cache
 4. `backend/market-service` - mandi API aggregation + cache
-5. `backend/agent-service` - recommendation and crop insight logic
+5. `backend/agent-service` - recommendation, crop insight, and chat logic (Ollama)
 6. `backend/notification-service` - alert evaluation + alert feed
 
 ## Tech Stack
@@ -54,10 +54,11 @@ Backend:
 3. PostgreSQL
 4. Redis
 5. Kafka (infra present)
+6. LangChain + Ollama (Local AI)
 
 Infra and Ops:
 
-1. Docker Compose
+1. Docker Compose (includes Ollama)
 2. Kubernetes manifests (`backend/k8s`)
 3. Prometheus + Grafana config
 4. GitHub Actions workflow for backend
@@ -70,10 +71,6 @@ Install these before running:
 2. npm
 3. Docker Desktop (or Docker Engine + Compose)
 
-Optional:
-
-1. Supabase CLI (only needed to deploy edge function changes)
-
 ## Environment Setup
 
 Backend services use `backend/.env`.
@@ -82,6 +79,7 @@ Minimum required keys for live data:
 
 1. `OPENWEATHER_API_KEY`
 2. `AGMARKNET_API_KEY`
+3. `OLLAMA_BASE_URL` (defaults to http://ollama:11434)
 
 You can copy from example:
 
@@ -128,12 +126,12 @@ Frontend:
 
 Backend APIs:
 
-1. `8001` auth-service
-2. `8002` user-profile-service
-3. `8003` weather-service
-4. `8004` market-service
-5. `8005` agent-service
-6. `8006` notification-service
+1. `8092` auth-service
+2. `8093` user-profile-service
+3. `8094` weather-service
+4. `8095` market-service
+5. `8096` agent-service
+6. `8097` notification-service
 
 Data + infra:
 
@@ -236,14 +234,6 @@ docker compose -f backend/docker-compose.yml down
 
 1. Some exact combinations may not have same-day records
 2. Service uses best available live match fallback, but can still fail for sparse inputs
-
-## Supabase Chat Function Note
-
-Code is in:
-
-1. `supabase/functions/sroa-chat/index.ts`
-
-If you edit it, you must deploy it with Supabase CLI for remote effect.
 
 ## License
 
