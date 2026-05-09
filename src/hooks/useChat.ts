@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
+import { serviceUrl } from "@/lib/api";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sroa-chat`;
+const CHAT_URL = `${serviceUrl(8096)}/chat`;
 
 function buildRuntimeContextMessage(): Message {
   const now = new Date();
@@ -58,7 +59,6 @@ export function useChat() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
             messages: requestMessages.map((m) => ({ role: m.role, content: m.content })),

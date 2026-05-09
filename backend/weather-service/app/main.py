@@ -22,8 +22,28 @@ app.add_middleware(
 )
 
 
+class MockRedis:
+    def __init__(self):
+        self._data = {}
+        print("Using MockRedis (No Redis server detected)")
+
+    def get(self, key):
+        return self._data.get(key)
+
+    def set(self, key, value, *args, **kwargs):
+        self._data[key] = value
+
+    def setex(self, key, time, value):
+        self._data[key] = value
+
+
 def get_redis_client() -> redis.Redis:
-    return redis.Redis.from_url(REDIS_URL, decode_responses=True)
+    try:
+        client = redis.Redis.from_url(REDIS_URL, decode_responses=True, socket_connect_timeout=2)
+        client.ping()
+        return client
+    except Exception:
+        return MockRedis()  # type: ignore
 
 
 def location_candidates(location: str) -> list[str]:

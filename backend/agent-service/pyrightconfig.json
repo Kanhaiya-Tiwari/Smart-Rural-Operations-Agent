@@ -1,0 +1,20 @@
+{
+  "include": ["app"],
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Darwin",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "reportAttributeAccessIssue": false,
+  "executionEnvironments": [
+    {
+      "root": "app",
+      "pythonVersion": "3.12",
+      "venvPath": ".",
+      "venv": ".venv"
+    }
+  ]
+}
