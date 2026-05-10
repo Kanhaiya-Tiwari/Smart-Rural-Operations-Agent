@@ -61,7 +61,8 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 5432
+    - name: postgres
+      port: 5432
   selector:
     app: postgres
   clusterIP: None
@@ -97,6 +98,7 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 6379
+    - name: redis
+      port: 6379
   selector:
     app: redis

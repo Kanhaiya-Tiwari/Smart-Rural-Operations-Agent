@@ -40,7 +40,8 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 8000
+    - name: http
+      port: 8000
   selector:
     app: auth-service
 ---
@@ -82,7 +83,8 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 8001
+    - name: http
+      port: 8001
   selector:
     app: user-profile-service
 ---
@@ -124,7 +126,8 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 8002
+    - name: http
+      port: 8002
   selector:
     app: weather-service
 ---
@@ -166,7 +169,8 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 8003
+    - name: http
+      port: 8003
   selector:
     app: market-service
 ---
@@ -208,7 +212,8 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 8004
+    - name: http
+      port: 8004
   selector:
     app: agent-service
 ---
@@ -250,6 +255,7 @@ metadata:
   namespace: sroa
 spec:
   ports:
-    - port: 8005
+    - name: http
+      port: 8005
   selector:
     app: notification-service
