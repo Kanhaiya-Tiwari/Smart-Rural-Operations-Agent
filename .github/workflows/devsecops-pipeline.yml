@@ -71,6 +71,8 @@ jobs:
   # STAGE 6: GitOps Bridge
   GitOps-Sync:
     needs: ECR-Push
+    permissions:
+      contents: write
     uses: ./.github/workflows/stage-6-gitops-bridge.yml
     with:
       image_tag: ${{ github.sha }}
