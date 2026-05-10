@@ -25,8 +25,8 @@ SERVICES=(
 
 # Process each service
 for ITEM in "${SERVICES[@]}"; do
-    SERVICE=$(echo $ITEM | cut -d: -f1)
-    CONTEXT=$(echo $ITEM | cut -d: -f2)
+    SERVICE=$(echo "$ITEM" | cut -d: -f1)
+    CONTEXT=$(echo "$ITEM" | cut -d: -f2)
     
     REPO_NAME="${PROJECT_NAME}-${SERVICE}"
     
@@ -35,10 +35,9 @@ for ITEM in "${SERVICES[@]}"; do
     echo "----------------------------------------------------"
 
     # Create repository if it doesn't exist
-    aws ecr describe-repositories --repository-names "${REPO_NAME}" --region ${AWS_REGION} > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
+    if ! aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" > /dev/null 2>&1; then
         echo "Creating ECR repository: ${REPO_NAME}"
-        aws ecr create-repository --repository-name "${REPO_NAME}" --region ${AWS_REGION}
+        aws ecr create-repository --repository-name "${REPO_NAME}" --region "${AWS_REGION}"
     else
         echo "Repository ${REPO_NAME} already exists."
     fi
