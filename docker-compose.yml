@@ -1,4 +1,5 @@
 services:
+  # Infrastructure
   postgres:
     image: postgres:16
     environment:
@@ -9,7 +10,7 @@ services:
       - "5434:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
 
   redis:
     image: redis:7
@@ -36,53 +37,70 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
+  # Backend Services
   auth-service:
-    build: ./auth-service
-    env_file: .env
+    build: ./backend/auth-service
+    env_file: ./backend/.env
     ports:
       - "8092:8000"
 
   user-profile-service:
-    build: ./user-profile-service
-    env_file: .env
+    build: ./backend/user-profile-service
+    env_file: ./backend/.env
     depends_on:
       - postgres
     ports:
       - "8093:8000"
 
   weather-service:
-    build: ./weather-service
-    env_file: .env
+    build: ./backend/weather-service
+    env_file: ./backend/.env
     depends_on:
       - redis
     ports:
       - "8094:8000"
 
   market-service:
-    build: ./market-service
-    env_file: .env
+    build: ./backend/market-service
+    env_file: ./backend/.env
     depends_on:
       - redis
     ports:
       - "8095:8000"
 
   agent-service:
-    build: ./agent-service
-    env_file: .env
+    build: ./backend/agent-service
+    env_file: ./backend/.env
     depends_on:
       - kafka
     ports:
       - "8096:8000"
 
   notification-service:
-    build: ./notification-service
-    env_file: .env
+    build: ./backend/notification-service
+    env_file: ./backend/.env
     depends_on:
       - kafka
       - postgres
     ports:
       - "8097:8000"
 
+  # Frontend Service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - VITE_API_HOST=localhost
+    depends_on:
+      - auth-service
+      - user-profile-service
+      - weather-service
+      - market-service
+      - agent-service
+      - notification-service
 
 volumes:
   pg_data:

@@ -1,6 +1,0 @@
-apiVersion: v2
-name: sroa
-version: 0.1.0
-description: Helm chart for SROA frontend and backend microservices
-type: application
-appVersion: "1.0.0"
