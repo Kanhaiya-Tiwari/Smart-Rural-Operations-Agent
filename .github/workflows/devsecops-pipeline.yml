@@ -20,15 +20,14 @@ jobs:
   Snyk:
     needs: [Gitleaks, Bandit, ShellCheck]
     uses: ./.github/workflows/stage-2-snyk.yml
-    secrets:
-      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    secrets: inherit
 
   # STAGE 3: Docker Lint & Build
   Hadolint:
     needs: Snyk
     strategy:
       matrix:
-        service: [auth-service, frontend] # Example subset
+        service: [auth-service, frontend]
     uses: ./.github/workflows/stage-3a-hadolint.yml
     with:
       dockerfile_path: ${{ matrix.service == 'frontend' && './Dockerfile' || format('./backend/{0}/Dockerfile', matrix.service) }}
@@ -94,5 +93,3 @@ jobs:
       GMAIL_SMTP_USERNAME: ${{ secrets.GMAIL_SMTP_USERNAME }}
       GMAIL_SMTP_PASSWORD: ${{ secrets.GMAIL_SMTP_PASSWORD }}
       EMAIL: ${{ secrets.EMAIL }}
-      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
