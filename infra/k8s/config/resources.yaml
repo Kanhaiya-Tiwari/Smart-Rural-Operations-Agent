@@ -27,3 +27,6 @@ data:
   POSTGRES_PASSWORD: c3JvYQ==
   POSTGRES_DB: c3JvYQ==
   JWT_SECRET: ZGV2LXNlY3JldA==
+  # Naye AI Secrets
+  OPENROUTER_API_KEY: "c2stb3ItdjEtNWZjNzk4NzczNWM4MDU4MmQ1NjE4YjUyNTQ2MjFjMWRkNmU4N2I3ZWI1NTUwYTJhMTMxMTFkOTRmZTc4Mjc5ZQo=" # Fill with base64 encoded key
+  GEMINI_API_KEY: "QUl6YVN5QTZVTlpXOTZ2amEzT3AxYVpaSE5tZ1YxZkx4ZkhIdzk0Cg=="     # Fill with base64 encoded key
