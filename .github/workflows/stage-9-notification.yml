@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.GMAIL_SMTP_USERNAME }}
           password: ${{ secrets.GMAIL_SMTP_PASSWORD }}
           subject: "SROA Pipeline Success! 🦾"
-          to: ${{ secrets.EMAIL }}
+          to: ${{ secrets.EMAIL || secrets.GMAIL_SMTP_USERNAME }}
           from: "SROA-Enterprise-Pipeline"
           body: |
             The 9-Stage DevSecOps Pipeline for SROA (branch 'kanha') has finished successfully.
