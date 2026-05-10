@@ -81,6 +81,8 @@ jobs:
   # STAGE 7: DAST Scan
   DAST-ZAP:
     needs: GitOps-Sync
+    permissions:
+      issues: write
     uses: ./.github/workflows/stage-7-owasp-zap.yml
     with:
       target_url: 'http://a40acbc2acfe548f39d873a0f64f4547-2cb78dbedb4cca42.elb.eu-west-1.amazonaws.com'
