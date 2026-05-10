@@ -5,7 +5,7 @@ name: "🦾 SROA Enterprise DevSecOps Pipeline"
 # ============================================================
 on:
   push:
-    branches: [ kanha ]
+    branches: [kanha]
 
 jobs:
   # STAGE 1: Shift-Left Security
@@ -85,7 +85,7 @@ jobs:
       issues: write
     uses: ./.github/workflows/stage-7-owasp-zap.yml
     with:
-      target_url: 'http://a40acbc2acfe548f39d873a0f64f4547-2cb78dbedb4cca42.elb.eu-west-1.amazonaws.com'
+      target_url: "http://a40acbc2acfe548f39d873a0f64f4547-2cb78dbedb4cca42.elb.eu-west-1.amazonaws.com"
 
   # STAGE 8: Promotion
   Promotion:
