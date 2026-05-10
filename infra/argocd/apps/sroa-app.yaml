@@ -99,7 +99,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
-    targetRevision: HEAD
+    targetRevision: kanha
     path: infra/k8s/networking
   destination:
     server: https://kubernetes.default.svc
