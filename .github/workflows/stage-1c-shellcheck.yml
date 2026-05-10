@@ -8,3 +8,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: ShellCheck Scripts Validation
         uses: ludeeus/action-shellcheck@master
+        with:
+          # Production Rule: Sirf apni scripts scan karo, node_modules ko ignore karo
+          scandir: './'
+          ignore_paths: 'node_modules'

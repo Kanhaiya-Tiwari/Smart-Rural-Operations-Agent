@@ -2,9 +2,11 @@ name: "Stage 9: Notification"
 on:
   workflow_call:
     secrets:
-      MAIL_USERNAME:
+      GMAIL_SMTP_USERNAME:
         required: true
-      MAIL_PASSWORD:
+      GMAIL_SMTP_PASSWORD:
+        required: true
+      EMAIL:
         required: true
 jobs:
   notify:
@@ -19,7 +21,9 @@ jobs:
           password: ${{ secrets.GMAIL_SMTP_PASSWORD }}
           subject: "SROA Pipeline Success! 🦾"
           to: ${{ secrets.EMAIL }}
-          from: ${{ secrets.GMAIL_SMTP_USERNAME }}
+          from: "SROA-Enterprise-Pipeline"
           body: |
             The 9-Stage DevSecOps Pipeline for SROA (branch 'kanha') has finished successfully.
             System is now Healthy and Production Ready.
+            
+            Build SHA: ${{ github.sha }}
