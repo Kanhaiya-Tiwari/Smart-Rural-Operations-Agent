@@ -20,7 +20,8 @@ jobs:
   Snyk:
     needs: [Gitleaks, Bandit, ShellCheck]
     uses: ./.github/workflows/stage-2-snyk.yml
-    secrets: inherit
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   # STAGE 3: Docker Lint & Build
   Hadolint:
@@ -63,7 +64,9 @@ jobs:
     with:
       service_name: ${{ matrix.service }}
       image_tag: ${{ github.sha }}
-    secrets: inherit
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   # STAGE 6: GitOps Bridge
   GitOps-Sync:
