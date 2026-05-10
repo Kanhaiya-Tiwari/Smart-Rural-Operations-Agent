@@ -1,0 +1,16 @@
+name: "Stage 7: OWASP ZAP"
+on:
+  workflow_call:
+    inputs:
+      target_url:
+        required: true
+        type: string
+jobs:
+  zap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ZAP Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: ${{ inputs.target_url }}
+          fail_action: false

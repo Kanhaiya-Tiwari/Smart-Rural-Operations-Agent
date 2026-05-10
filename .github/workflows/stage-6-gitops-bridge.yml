@@ -1,0 +1,24 @@
+name: "Stage 6: GitOps Bridge"
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+jobs:
+  gitops:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Manifests
+        run: |
+          sed -i "s/latest/${{ inputs.image_tag }}/g" infra/k8s/backend/resources.yaml
+          sed -i "s/latest/${{ inputs.image_tag }}/g" infra/k8s/frontend/resources.yaml
+          git config --global user.name "SROA-CI-Bot"
+          git config --global user.email "ci-bot@sroa.com"
+          git add infra/k8s/
+          git commit -m "chore: deploy version ${{ inputs.image_tag }} [skip ci]" || echo "No changes"
+          git push origin ${{ inputs.branch }}

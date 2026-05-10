@@ -1,0 +1,25 @@
+name: "Stage 9: Notification"
+on:
+  workflow_call:
+    secrets:
+      MAIL_USERNAME:
+        required: true
+      MAIL_PASSWORD:
+        required: true
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Gmail Alert
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_SMTP_USERNAME }}
+          password: ${{ secrets.GMAIL_SMTP_PASSWORD }}
+          subject: "SROA Pipeline Success! 🦾"
+          to: ${{ secrets.EMAIL }}
+          from: ${{ secrets.GMAIL_SMTP_USERNAME }}
+          body: |
+            The 9-Stage DevSecOps Pipeline for SROA (branch 'kanha') has finished successfully.
+            System is now Healthy and Production Ready.

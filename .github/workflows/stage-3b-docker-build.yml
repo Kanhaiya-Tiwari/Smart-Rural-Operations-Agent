@@ -1,0 +1,20 @@
+name: "Stage 3b: Docker Build"
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Image
+        run: |
+          CONTEXT=${{ inputs.service_name == 'frontend' && '.' || format('./backend/{0}', inputs.service_name) }}
+          DOCKERFILE=${{ inputs.service_name == 'frontend' && './Dockerfile' || format('./backend/{0}/Dockerfile', inputs.service_name) }}
+          docker build -t sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} -f $DOCKERFILE .

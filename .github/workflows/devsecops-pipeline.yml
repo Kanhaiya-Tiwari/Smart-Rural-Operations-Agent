@@ -1,0 +1,95 @@
+name: "🦾 SROA Enterprise DevSecOps Pipeline"
+# ============================================================
+# Main Entry Point for the SROA 9-Stage Pipeline
+# Coordinates 13 reusable workflows for a Production-Grade flow
+# ============================================================
+on:
+  push:
+    branches: [ kanha ]
+
+jobs:
+  # STAGE 1: Shift-Left Security
+  Gitleaks:
+    uses: ./.github/workflows/stage-1a-gitleaks.yml
+  Bandit:
+    uses: ./.github/workflows/stage-1b-bandit.yml
+  ShellCheck:
+    uses: ./.github/workflows/stage-1c-shellcheck.yml
+
+  # STAGE 2: SCA
+  Snyk:
+    needs: [Gitleaks, Bandit, ShellCheck]
+    uses: ./.github/workflows/stage-2-snyk.yml
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # STAGE 3: Docker Lint & Build
+  Hadolint:
+    needs: Snyk
+    strategy:
+      matrix:
+        service: [auth-service, frontend] # Example subset
+    uses: ./.github/workflows/stage-3a-hadolint.yml
+    with:
+      dockerfile_path: ${{ matrix.service == 'frontend' && './Dockerfile' || format('./backend/{0}/Dockerfile', matrix.service) }}
+
+  Build:
+    needs: Hadolint
+    strategy:
+      matrix:
+        service: [auth-service, frontend]
+    uses: ./.github/workflows/stage-3b-docker-build.yml
+    with:
+      service_name: ${{ matrix.service }}
+      image_tag: ${{ github.sha }}
+
+  # STAGE 4: Container Security
+  Trivy:
+    needs: Build
+    strategy:
+      matrix:
+        service: [auth-service, frontend]
+    uses: ./.github/workflows/stage-4-trivy-scan.yml
+    with:
+      service_name: ${{ matrix.service }}
+      image_tag: ${{ github.sha }}
+
+  # STAGE 5: ECR Push
+  ECR-Push:
+    needs: Trivy
+    strategy:
+      matrix:
+        service: [auth-service, frontend]
+    uses: ./.github/workflows/stage-5-ecr-push.yml
+    with:
+      service_name: ${{ matrix.service }}
+      image_tag: ${{ github.sha }}
+    secrets: inherit
+
+  # STAGE 6: GitOps Bridge
+  GitOps-Sync:
+    needs: ECR-Push
+    uses: ./.github/workflows/stage-6-gitops-bridge.yml
+    with:
+      image_tag: ${{ github.sha }}
+      branch: kanha
+
+  # STAGE 7: DAST Scan
+  DAST-ZAP:
+    needs: GitOps-Sync
+    uses: ./.github/workflows/stage-7-owasp-zap.yml
+    with:
+      target_url: 'http://a40acbc2acfe548f39d873a0f64f4547-2cb78dbedb4cca42.elb.eu-west-1.amazonaws.com'
+
+  # STAGE 8: Promotion
+  Promotion:
+    needs: DAST-ZAP
+    uses: ./.github/workflows/stage-8-promotion.yml
+
+  # STAGE 9: Gmail Notification
+  Final-Alert:
+    needs: Promotion
+    uses: ./.github/workflows/stage-9-notification.yml
+    secrets:
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
