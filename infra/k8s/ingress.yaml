@@ -1,0 +1,48 @@
+# Exposes the application to the internet via a Load Balancer
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sroa-ingress
+  namespace: sroa
+  annotations:
+    # Uses Nginx as the ingress controller
+    kubernetes.io/ingress.class: nginx
+    # Automatically triggers cert-manager to get an SSL certificate
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - sroa.example.com
+    secretName: sroa-tls
+  rules:
+  # Rule 1: Domain-based routing (for production with real domain)
+  - host: sroa.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port: { number: 80 }
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port: { number: 8000 }
+  # Rule 2: No-host rule — allows access via LoadBalancer IP/hostname directly
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port: { number: 80 }
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port: { number: 8000 }

@@ -1,0 +1,29 @@
+# Namespace, ConfigMap, Secrets
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sroa
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sroa-config
+  namespace: sroa
+data:
+  POSTGRES_HOST: "postgres"
+  POSTGRES_DSN: "postgresql://sroa:sroa@postgres:5432/sroa"
+  REDIS_URL: "redis://redis:6379/0"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sroa-secrets
+  namespace: sroa
+type: Opaque
+data:
+  # echo -n 'sroa' | base64
+  POSTGRES_USER: c3JvYQ==
+  POSTGRES_PASSWORD: c3JvYQ==
+  POSTGRES_DB: c3JvYQ==
+  JWT_SECRET: ZGV2LXNlY3JldA==

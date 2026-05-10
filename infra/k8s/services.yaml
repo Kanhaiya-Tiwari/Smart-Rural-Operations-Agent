@@ -1,0 +1,102 @@
+# --- FRONTEND SERVICE ---
+# Exposes the frontend on port 80 (standard HTTP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: sroa
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: frontend
+
+---
+# --- DATABASE SERVICES ---
+# Headless service for stable network identity of the Postgres StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: sroa
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
+  clusterIP: None
+
+---
+# Service to expose Redis within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: sroa
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: redis
+
+---
+# --- BACKEND MICROSERVICES ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: sroa
+spec:
+  ports: [{ port: 8000 }]
+  selector: { app: auth-service }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-profile-service
+  namespace: sroa
+spec:
+  ports: [{ port: 8000 }]
+  selector: { app: user-profile-service }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather-service
+  namespace: sroa
+spec:
+  ports: [{ port: 8000 }]
+  selector: { app: weather-service }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-service
+  namespace: sroa
+spec:
+  ports: [{ port: 8000 }]
+  selector: { app: market-service }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: sroa
+spec:
+  ports: [{ port: 8000 }]
+  selector: { app: agent-service }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: sroa
+spec:
+  ports: [{ port: 8000 }]
+  selector: { app: notification-service }

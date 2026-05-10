@@ -370,3 +370,7 @@ When manually dispatching, set:
 4. Confirm the Kubernetes Helm values in `devops/helm/sroa/values.yaml` match your cluster and image repo.
 5. If you only need local validation, `target_url` can point to a publicly accessible staging URL.
 6. The pipeline fails if Trivy finds any `CRITICAL` or `HIGH` vulnerabilities.
+Terraform output:
+terraform output -raw argocd_admin_password
+terraform output -raw grafana_admin_password
+

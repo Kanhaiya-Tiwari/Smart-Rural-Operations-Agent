@@ -1,0 +1,5 @@
+# Creates a dedicated logical space for all project resources
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sroa
