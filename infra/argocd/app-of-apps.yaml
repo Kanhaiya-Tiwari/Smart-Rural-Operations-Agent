@@ -17,7 +17,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
-    targetRevision: HEAD
+    targetRevision: kanha
     # Ye folder watch hoga — isme sirf Application manifests rakho
     path: infra/argocd/apps
   destination:

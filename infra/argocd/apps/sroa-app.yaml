@@ -11,7 +11,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
-    targetRevision: HEAD
+    targetRevision: kanha
     path: infra/k8s/config
   destination:
     server: https://kubernetes.default.svc
@@ -33,7 +33,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
-    targetRevision: HEAD
+    targetRevision: kanha
     path: infra/k8s/databases
   destination:
     server: https://kubernetes.default.svc
@@ -55,7 +55,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
-    targetRevision: HEAD
+    targetRevision: kanha
     path: infra/k8s/backend
   destination:
     server: https://kubernetes.default.svc
@@ -77,7 +77,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
-    targetRevision: HEAD
+    targetRevision: kanha
     path: infra/k8s/frontend
   destination:
     server: https://kubernetes.default.svc
