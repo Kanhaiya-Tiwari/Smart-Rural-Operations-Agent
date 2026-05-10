@@ -15,6 +15,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Image
         run: |
-          CONTEXT=${{ inputs.service_name == 'frontend' && '.' || format('./backend/{0}', inputs.service_name) }}
-          DOCKERFILE=${{ inputs.service_name == 'frontend' && './Dockerfile' || format('./backend/{0}/Dockerfile', inputs.service_name) }}
-          docker build -t sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} -f $DOCKERFILE .
+          # Production Rule: Context ko service folder par rakho taaki COPY commands sahi se chalein
+          if [ "${{ inputs.service_name }}" == "frontend" ]; then
+            docker build -t sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} -f ./Dockerfile .
+          else
+            cd backend/${{ inputs.service_name }}
+            docker build -t sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} -f ./Dockerfile .
+          fi
