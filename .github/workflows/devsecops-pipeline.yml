@@ -4,7 +4,7 @@ on:
     branches: [ kanha ]
 
 jobs:
-  # --- TRACK 1: GLOBAL SECURITY (Parallel) ---
+  # --- TRACK 1: GLOBAL SECURITY ---
   Gitleaks:
     uses: ./.github/workflows/stage-1a-gitleaks.yml
   Bandit:
@@ -16,38 +16,50 @@ jobs:
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-  # --- TRACK 2: AUTH SERVICE PIPELINE (Parallel Track) ---
-  Auth-Lint:
+  # --- TRACK 2: BACKEND SERVICES (Matrix for ALL Services) ---
+  Backend-Lint:
     needs: [Gitleaks, Bandit, Snyk]
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
     uses: ./.github/workflows/stage-3a-hadolint.yml
     with:
-      dockerfile_path: ./backend/auth-service/Dockerfile
+      dockerfile_path: ./backend/${{ matrix.service }}/Dockerfile
 
-  Auth-Build:
-    needs: Auth-Lint
+  Backend-Build:
+    needs: Backend-Lint
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
     uses: ./.github/workflows/stage-3b-docker-build.yml
     with:
-      service_name: auth-service
+      service_name: ${{ matrix.service }}
       image_tag: ${{ github.sha }}
 
-  Auth-Scan:
-    needs: Auth-Build
+  Backend-Scan:
+    needs: Backend-Build
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
     uses: ./.github/workflows/stage-4-trivy-scan.yml
     with:
-      service_name: auth-service
+      service_name: ${{ matrix.service }}
       image_tag: ${{ github.sha }}
 
-  Auth-Push:
-    needs: Auth-Scan
+  Backend-Push:
+    needs: Backend-Scan
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
     uses: ./.github/workflows/stage-5-ecr-push.yml
     with:
-      service_name: auth-service
+      service_name: ${{ matrix.service }}
       image_tag: ${{ github.sha }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  # --- TRACK 3: FRONTEND PIPELINE (Parallel Track) ---
+  # --- TRACK 3: FRONTEND PIPELINE ---
   Frontend-Lint:
     needs: [Gitleaks, Bandit, Snyk]
     uses: ./.github/workflows/stage-3a-hadolint.yml
@@ -78,9 +90,9 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  # --- TRACK 4: GITOPS & DEPLOYMENT (Merging Tracks) ---
+  # --- TRACK 4: GITOPS & DEPLOYMENT ---
   GitOps-Sync:
-    needs: [Auth-Push, Frontend-Push]
+    needs: [Backend-Push, Frontend-Push]
     permissions:
       contents: write
     uses: ./.github/workflows/stage-6-gitops-bridge.yml
@@ -101,10 +113,10 @@ jobs:
     needs: DAST-ZAP
     uses: ./.github/workflows/stage-8-promotion.yml
 
-  # --- TRACK 6: GLOBAL NOTIFICATION (Final Merge Point) ---
+  # --- TRACK 6: GLOBAL NOTIFICATION ---
   Notification:
     if: always()
-    needs: [Promotion, ShellCheck] # Ensures it waits for the whole tree
+    needs: [Promotion, ShellCheck]
     uses: ./.github/workflows/stage-9-notification.yml
     with:
       status: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && 'Failed' || 'Success' }}
