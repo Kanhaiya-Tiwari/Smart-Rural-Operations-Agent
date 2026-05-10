@@ -92,10 +92,13 @@ jobs:
     needs: DAST-ZAP
     uses: ./.github/workflows/stage-8-promotion.yml
 
-  # STAGE 9: Gmail Notification
-  Final-Alert:
-    needs: Promotion
+  # --- GROUP 9: INTELLIGENT NOTIFICATION ---
+  Notification:
+    if: always()
+    needs: [Gitleaks, Bandit, ShellCheck, Snyk, Hadolint, Build, Trivy, ECR-Push, GitOps-Sync, DAST-ZAP, Promotion]
     uses: ./.github/workflows/stage-9-notification.yml
+    with:
+      status: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') && 'Failed' || 'Success' }}
     secrets:
       GMAIL_SMTP_USERNAME: ${{ secrets.GMAIL_SMTP_USERNAME }}
       GMAIL_SMTP_PASSWORD: ${{ secrets.GMAIL_SMTP_PASSWORD }}
