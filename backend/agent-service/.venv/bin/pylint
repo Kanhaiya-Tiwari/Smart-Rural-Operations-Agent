@@ -1,6 +1,0 @@
-#!/Users/kanha/DevOps/AGENT_SROA/Smart-Rural-Operations-Agent/backend/agent-service/.venv/bin/python3.12
-import sys
-from pylint import run_pylint
-if __name__ == '__main__':
-    sys.argv[0] = sys.argv[0].removesuffix('.exe')
-    sys.exit(run_pylint())
