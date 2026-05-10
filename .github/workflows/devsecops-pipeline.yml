@@ -91,5 +91,8 @@ jobs:
     needs: Promotion
     uses: ./.github/workflows/stage-9-notification.yml
     secrets:
+      GMAIL_SMTP_USERNAME: ${{ secrets.GMAIL_SMTP_USERNAME }}
+      GMAIL_SMTP_PASSWORD: ${{ secrets.GMAIL_SMTP_PASSWORD }}
+      EMAIL: ${{ secrets.EMAIL }}
       MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
       MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
