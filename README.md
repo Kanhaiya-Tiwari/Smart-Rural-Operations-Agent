@@ -158,7 +158,6 @@ Every push to the `main` branch triggers a comprehensive security-focused pipeli
 <div align="center">
   <table>
     <tr>
-      <td><img src="assets/screenshots/sroa_screenshot_1.png" width="300"><br>Dashboard Home</td>
       <td><img src="assets/screenshots/sroa_screenshot_2.png" width="300"><br>Real-time Weather</td>
       <td><img src="assets/screenshots/sroa_screenshot_3.png" width="300"><br>Mandi Price Tracker</td>
     </tr>
@@ -169,12 +168,9 @@ Every push to the `main` branch triggers a comprehensive security-focused pipeli
     </tr>
     <tr>
       <td><img src="assets/screenshots/sroa_screenshot_7.png" width="300"><br>Infrastructure Health</td>
-      <td><img src="assets/screenshots/sroa_screenshot_8.png" width="300"><br>DevSecOps Pipeline</td>
       <td><img src="assets/screenshots/sroa_screenshot_9.png" width="300"><br>ArgoCD GitOps</td>
     </tr>
     <tr>
-      <td><img src="assets/screenshots/sroa_screenshot_10.png" width="300"><br>Grafana Dashboards</td>
-      <td><img src="assets/screenshots/sroa_screenshot_11.png" width="300"><br>System Logs</td>
       <td><img src="assets/screenshots/sroa_screenshot_12.png" width="300"><br>Mobile Responsive View</td>
     </tr>
   </table>
