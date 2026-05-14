@@ -183,4 +183,4 @@ Licensed under the [MIT License](LICENSE).
 
 ## 👨‍💻 Developed By
 **Kanhaiya Tiwari** - *DevOps & Cloud Engineer*  
-[GitHub](https://github.com/Kanhaiya-Tiwari) | [Portfolio](https://kanhaiya.dev)
+[GitHub](https://github.com/Kanhaiya-Tiwari) | [Portfolio](https://info.buildwithkanha.shop) | [other project](https://devtrackr.buildwithkanha.shop)
