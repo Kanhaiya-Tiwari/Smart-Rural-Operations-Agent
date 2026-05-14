@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-frontend:592677ea780b37d6da7e452f5929d33062948de5
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-frontend:61a7d7851b3080af038028ab9dde7fa5b8f22b45
           ports:
             - containerPort: 8080
           envFrom:

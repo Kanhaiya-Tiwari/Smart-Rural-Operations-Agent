@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-auth-service:592677ea780b37d6da7e452f5929d33062948de5
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-auth-service:61a7d7851b3080af038028ab9dde7fa5b8f22b45
           ports:
             - containerPort: 8000
           envFrom:
@@ -64,7 +64,7 @@ spec:
     spec:
       containers:
         - name: user-profile-service
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-user-profile-service:592677ea780b37d6da7e452f5929d33062948de5
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-user-profile-service:61a7d7851b3080af038028ab9dde7fa5b8f22b45
           ports:
             - containerPort: 8000
           envFrom:
@@ -108,7 +108,7 @@ spec:
     spec:
       containers:
         - name: weather-service
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-weather-service:592677ea780b37d6da7e452f5929d33062948de5
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-weather-service:61a7d7851b3080af038028ab9dde7fa5b8f22b45
           ports:
             - containerPort: 8000
           envFrom:
@@ -152,7 +152,7 @@ spec:
     spec:
       containers:
         - name: market-service
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-market-service:592677ea780b37d6da7e452f5929d33062948de5
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-market-service:61a7d7851b3080af038028ab9dde7fa5b8f22b45
           ports:
             - containerPort: 8000
           envFrom:
@@ -196,7 +196,7 @@ spec:
     spec:
       containers:
         - name: agent-service
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-agent-service:592677ea780b37d6da7e452f5929d33062948de5
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-agent-service:61a7d7851b3080af038028ab9dde7fa5b8f22b45
           ports:
             - containerPort: 8000
           envFrom:
@@ -241,7 +241,7 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-notification-service:592677ea780b37d6da7e452f5929d33062948de5
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-notification-service:61a7d7851b3080af038028ab9dde7fa5b8f22b45
           ports:
             - containerPort: 8000
           envFrom:
