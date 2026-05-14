@@ -172,17 +172,19 @@ def analyze_image_openrouter(image_base64: str) -> dict:
 
 def run_image_analysis(image_base64: str) -> tuple[dict, str]:
     """Try Gemini first, fall back to OpenRouter. Returns (data, provider)."""
+    errors = []
     if _gemini:
         try:
             return analyze_image_gemini(image_base64), "gemini-vision"
-        except Exception:
-            pass
+        except Exception as e:
+            errors.append(f"Gemini Error: {str(e)}")
     if _openrouter:
         try:
             return analyze_image_openrouter(image_base64), "openrouter-vision"
-        except Exception:
-            pass
-    raise RuntimeError("Both Gemini and OpenRouter vision analysis failed.")
+        except Exception as e:
+            errors.append(f"OpenRouter Error: {str(e)}")
+    raise RuntimeError(" | ".join(errors) if errors else "No AI providers configured.")
+
 
 
 # ── Text analysis (Gemini → OpenRouter fallback) ──────────────────────────
