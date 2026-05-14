@@ -1,0 +1,50 @@
+name: "Stage 5: ECR Push"
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image-${{ inputs.service_name }}
+      
+      - name: Load Docker Image
+        run: docker load < image.tar
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag and Push to ECR
+        run: |
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          REPO_NAME=sroa-${{ inputs.service_name }}
+          
+          docker tag sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} $ECR_REGISTRY/$REPO_NAME:${{ inputs.image_tag }}
+          docker tag sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} $ECR_REGISTRY/$REPO_NAME:latest
+          
+          docker push $ECR_REGISTRY/$REPO_NAME:${{ inputs.image_tag }}
+          docker push $ECR_REGISTRY/$REPO_NAME:latest

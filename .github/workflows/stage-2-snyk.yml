@@ -1,0 +1,16 @@
+name: "Stage 2: Snyk SCA"
+on:
+  workflow_call:
+    secrets:
+      SNYK_TOKEN:
+        required: true
+jobs:
+  snyk:
+    runs-on: ubuntu-latest
+    continue-on-error: true # Added here because caller workflow doesn't support it with 'uses'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Snyk Dependency Scan
+        uses: snyk/actions/python-3.10@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

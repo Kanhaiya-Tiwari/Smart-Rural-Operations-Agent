@@ -1,0 +1,268 @@
+# Microservices: Auth, Profile, Weather, Market, Agent, Notification
+# Each includes Deployment, Service, and HPA
+---
+# Auth Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: sroa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-auth-service:da5a259a14eb449f57d4decf27412fbcafcb3ce0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: sroa-config }
+            - secretRef: { name: sroa-secrets }
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: sroa
+spec:
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+  selector:
+    app: auth-service
+---
+# User Profile Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-profile-service
+  namespace: sroa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-profile-service
+  template:
+    metadata:
+      labels:
+        app: user-profile-service
+    spec:
+      containers:
+        - name: user-profile-service
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-user-profile-service:da5a259a14eb449f57d4decf27412fbcafcb3ce0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: sroa-config }
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-profile-service
+  namespace: sroa
+spec:
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8000
+  selector:
+    app: user-profile-service
+---
+# Weather Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-service
+  namespace: sroa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-service
+  template:
+    metadata:
+      labels:
+        app: weather-service
+    spec:
+      containers:
+        - name: weather-service
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-weather-service:da5a259a14eb449f57d4decf27412fbcafcb3ce0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: sroa-config }
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather-service
+  namespace: sroa
+spec:
+  ports:
+    - name: http
+      port: 8002
+      targetPort: 8000
+  selector:
+    app: weather-service
+---
+# Market Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-service
+  namespace: sroa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: market-service
+  template:
+    metadata:
+      labels:
+        app: market-service
+    spec:
+      containers:
+        - name: market-service
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-market-service:da5a259a14eb449f57d4decf27412fbcafcb3ce0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: sroa-config }
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-service
+  namespace: sroa
+spec:
+  ports:
+    - name: http
+      port: 8003
+      targetPort: 8000
+  selector:
+    app: market-service
+---
+# Agent Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-service
+  namespace: sroa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-service
+  template:
+    metadata:
+      labels:
+        app: agent-service
+    spec:
+      containers:
+        - name: agent-service
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-agent-service:da5a259a14eb449f57d4decf27412fbcafcb3ce0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: sroa-config }
+            - secretRef: { name: sroa-secrets }
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: sroa
+spec:
+  ports:
+    - name: http
+      port: 8004
+      targetPort: 8000
+  selector:
+    app: agent-service
+---
+# Notification Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: sroa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-notification-service:da5a259a14eb449f57d4decf27412fbcafcb3ce0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: sroa-config }
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: sroa
+spec:
+  ports:
+    - name: http
+      port: 8005
+      targetPort: 8000
+  selector:
+    app: notification-service

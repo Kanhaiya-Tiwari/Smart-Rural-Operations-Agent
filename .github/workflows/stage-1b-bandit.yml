@@ -1,0 +1,12 @@
+name: "Stage 1b: Bandit"
+on:
+  workflow_call:
+jobs:
+  bandit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bandit Security Scan
+        run: |
+          pip install bandit
+          bandit -r ./backend -ll

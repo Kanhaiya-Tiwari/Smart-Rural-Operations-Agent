@@ -1,0 +1,126 @@
+name: "🦾 SROA Enterprise DevSecOps Pipeline"
+on:
+  push:
+    branches: [ kanha ]
+
+jobs:
+  # --- TRACK 1: GLOBAL SECURITY ---
+  Gitleaks:
+    uses: ./.github/workflows/stage-1a-gitleaks.yml
+  Bandit:
+    uses: ./.github/workflows/stage-1b-bandit.yml
+  ShellCheck:
+    uses: ./.github/workflows/stage-1c-shellcheck.yml
+  Snyk:
+    uses: ./.github/workflows/stage-2-snyk.yml
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # --- TRACK 2: BACKEND SERVICES (Matrix for ALL Services) ---
+  Backend-Lint:
+    needs: [Gitleaks, Bandit, Snyk]
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
+    uses: ./.github/workflows/stage-3a-hadolint.yml
+    with:
+      dockerfile_path: ./backend/${{ matrix.service }}/Dockerfile
+
+  Backend-Build:
+    needs: Backend-Lint
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
+    uses: ./.github/workflows/stage-3b-docker-build.yml
+    with:
+      service_name: ${{ matrix.service }}
+      image_tag: ${{ github.sha }}
+
+  Backend-Scan:
+    needs: Backend-Build
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
+    uses: ./.github/workflows/stage-4-trivy-scan.yml
+    with:
+      service_name: ${{ matrix.service }}
+      image_tag: ${{ github.sha }}
+
+  Backend-Push:
+    needs: Backend-Scan
+    strategy:
+      matrix:
+        service: [auth-service, agent-service, market-service, weather-service, notification-service, user-profile-service]
+    uses: ./.github/workflows/stage-5-ecr-push.yml
+    with:
+      service_name: ${{ matrix.service }}
+      image_tag: ${{ github.sha }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  # --- TRACK 3: FRONTEND PIPELINE ---
+  Frontend-Lint:
+    needs: [Gitleaks, Bandit, Snyk]
+    uses: ./.github/workflows/stage-3a-hadolint.yml
+    with:
+      dockerfile_path: ./Dockerfile
+
+  Frontend-Build:
+    needs: Frontend-Lint
+    uses: ./.github/workflows/stage-3b-docker-build.yml
+    with:
+      service_name: frontend
+      image_tag: ${{ github.sha }}
+
+  Frontend-Scan:
+    needs: Frontend-Build
+    uses: ./.github/workflows/stage-4-trivy-scan.yml
+    with:
+      service_name: frontend
+      image_tag: ${{ github.sha }}
+
+  Frontend-Push:
+    needs: Frontend-Scan
+    uses: ./.github/workflows/stage-5-ecr-push.yml
+    with:
+      service_name: frontend
+      image_tag: ${{ github.sha }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  # --- TRACK 4: GITOPS & DEPLOYMENT ---
+  GitOps-Sync:
+    needs: [Backend-Push, Frontend-Push]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/stage-6-gitops-bridge.yml
+    with:
+      image_tag: ${{ github.sha }}
+      branch: kanha
+
+  # --- TRACK 5: POST-DEPLOYMENT SECURITY ---
+  DAST-ZAP:
+    needs: GitOps-Sync
+    permissions:
+      issues: write
+    uses: ./.github/workflows/stage-7-owasp-zap.yml
+    with:
+      target_url: 'http://a40acbc2acfe548f39d873a0f64f4547-2cb78dbedb4cca42.elb.eu-west-1.amazonaws.com'
+
+  Promotion:
+    needs: DAST-ZAP
+    uses: ./.github/workflows/stage-8-promotion.yml
+
+  # --- TRACK 6: GLOBAL NOTIFICATION ---
+  Notification:
+    if: always()
+    needs: [Promotion, ShellCheck]
+    uses: ./.github/workflows/stage-9-notification.yml
+    with:
+      status: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && 'Failed' || 'Success' }}
+    secrets:
+      GMAIL_SMTP_USERNAME: ${{ secrets.GMAIL_SMTP_USERNAME }}
+      GMAIL_SMTP_PASSWORD: ${{ secrets.GMAIL_SMTP_PASSWORD }}
+      EMAIL: ${{ secrets.EMAIL }}

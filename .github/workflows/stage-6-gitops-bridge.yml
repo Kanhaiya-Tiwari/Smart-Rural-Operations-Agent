@@ -1,0 +1,35 @@
+name: "Stage 6: GitOps Bridge"
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+
+jobs:
+  update-manifests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.branch }}
+
+      - name: Update Manifests with New Image Tag
+        run: |
+          # Robust Regex: Kisi bhi purane tag ko naye image_tag se replace karein
+          sed -i "s|815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-\([^:]*\):[^ \"]*|815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-\1:${{ inputs.image_tag }}|g" infra/k8s/backend/resources.yaml
+          sed -i "s|815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-\([^:]*\):[^ \"]*|815210276744.dkr.ecr.eu-west-1.amazonaws.com/sroa-\1:${{ inputs.image_tag }}|g" infra/k8s/frontend/resources.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: deploy version ${{ inputs.image_tag }} [skip ci]" || echo "No changes to commit"
+          git push origin ${{ inputs.branch }}

@@ -1,0 +1,33 @@
+name: "Stage 3b: Docker Build"
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Image
+        run: |
+          if [ "${{ inputs.service_name }}" == "frontend" ]; then
+            docker build -t sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} -f ./Dockerfile .
+          else
+            cd backend/${{ inputs.service_name }}
+            docker build -t sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} -f ./Dockerfile .
+          fi
+      
+      - name: Export Image to Tar
+        run: docker save sroa/${{ inputs.service_name }}:${{ inputs.image_tag }} > image.tar
+
+      - name: Upload Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ inputs.service_name }}
+          path: image.tar
+          retention-days: 1

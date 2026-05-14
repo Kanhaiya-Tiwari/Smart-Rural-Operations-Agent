@@ -1,0 +1,28 @@
+name: "Stage 7: OWASP ZAP Scan"
+on:
+  workflow_call:
+    inputs:
+      target_url:
+        required: true
+        type: string
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: ${{ inputs.target_url }}
+          # Production Rule: Automated reporting and issue creation
+          issue_title: "Security: DAST Scan Alerts - ${{ github.sha }}"
+          artifact_name: "zap-report-html"
+
+      - name: Upload Scan Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: "zap-scan-results-${{ github.run_id }}"
+          path: 'zap_report.html'

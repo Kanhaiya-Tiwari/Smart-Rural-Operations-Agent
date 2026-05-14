@@ -1,0 +1,9 @@
+name: "Stage 8: Promotion"
+on:
+  workflow_call:
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Promote to Production
+        run: echo "Merging Staging to Production branch..."

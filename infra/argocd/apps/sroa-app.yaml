@@ -1,0 +1,109 @@
+# ============================================================
+# Child App 1: SROA Config (Namespace, ConfigMap, Secrets)
+# ============================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sroa-config
+  namespace: argocd
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
+    targetRevision: kanha
+    path: infra/k8s/config
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sroa
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
+---
+# ============================================================
+# Child App 2: SROA Databases (Postgres, Redis, StorageClass)
+# ============================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sroa-databases
+  namespace: argocd
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
+    targetRevision: kanha
+    path: infra/k8s/databases
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sroa
+  syncPolicy:
+    automated: { prune: false, selfHeal: true }  # prune: false = DB data safe rahega
+    syncOptions: [CreateNamespace=true]
+---
+# ============================================================
+# Child App 3: SROA Backend (6 Microservices + HPA)
+# ============================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sroa-backend
+  namespace: argocd
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
+    targetRevision: kanha
+    path: infra/k8s/backend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sroa
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
+---
+# ============================================================
+# Child App 4: SROA Frontend (Deployment + Services)
+# ============================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sroa-frontend
+  namespace: argocd
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
+    targetRevision: kanha
+    path: infra/k8s/frontend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sroa
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
+---
+# ============================================================
+# Child App 5: SROA Networking (Ingress + Cert-Manager ClusterIssuer)
+# ============================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sroa-networking
+  namespace: argocd
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
+    targetRevision: kanha
+    path: infra/k8s/networking
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sroa
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]

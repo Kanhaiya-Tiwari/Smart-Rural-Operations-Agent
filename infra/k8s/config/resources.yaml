@@ -1,0 +1,48 @@
+# Namespace, ConfigMap, Secrets
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sroa
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sroa-config
+  namespace: sroa
+data:
+  POSTGRES_HOST: "postgres"
+  POSTGRES_DSN: "postgresql://sroa:sroa@postgres:5432/sroa"
+  REDIS_URL: "redis://redis:6379/0"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  # Frontend API Host (Point to your LoadBalancer/Ingress URL)
+  VITE_API_HOST: "http://a40acbc2acfe548f39d873a0f64f4547-2cb78dbedb4cca42.elb.eu-west-1.amazonaws.com"
+  # Internal Service URLs for API communication
+  AUTH_SERVICE_URL: "http://auth-service:8000"
+  AGENT_SERVICE_URL: "http://agent-service:8004"
+  WEATHER_SERVICE_URL: "http://weather-service:8002"
+  MARKET_SERVICE_URL: "http://market-service:8003"
+  USER_SERVICE_URL: "http://user-profile-service:8001"
+  NOTIFICATION_SERVICE_URL: "http://notification-service:8005"
+  # AI Model Configs
+  GEMINI_CHAT_MODEL: "gemini-2.0-flash"
+  GEMINI_VISION_MODEL: "gemini-2.0-flash"
+  OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1"
+  OPENROUTER_CHAT_MODEL: "google/gemini-2.0-flash-001"
+  OPENROUTER_VISION_MODEL: "google/gemini-2.0-flash-001"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sroa-secrets
+  namespace: sroa
+type: Opaque
+data:
+  POSTGRES_USER: c3JvYQ==
+  POSTGRES_PASSWORD: c3JvYQ==
+  POSTGRES_DB: c3JvYQ==
+  JWT_SECRET: ZGV2LXNlY3JldA==
+  # API Keys (Base64 Encoded WITHOUT newlines)
+  GEMINI_API_KEY: "QUl6YVN5QTZVTlpXOTZ2amEzT3AxYVpaSE5tZ1YxZkx4ZkhIdzk0"
+  OPENROUTER_API_KEY: "c2stb3ItdjEtYTJiYjc2OWYxMGI2MTA1ZGYyYmM3NDk1MzE2ODBmMzUzNzljNmMxYzBmNmM4YTQyM2U5YjI5OGM0ZjVlZTc5NQ=="
+  OPENWEATHER_API_KEY: "NmMxNzdhY2ViYTE1ZTU3ZDQxZDYyMDU3NjkyMDcyYTQ="
+  AGMARKNET_API_KEY: "NTc5YjQ2NGRiNjZlYzIzYmRkMDAwMDAxZGVmNzFiNGVkOTEwNDI0ZTQzM2JjOGUyZDc3ZDBhMTg="

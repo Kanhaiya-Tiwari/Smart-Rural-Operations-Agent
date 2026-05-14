@@ -1,0 +1,31 @@
+# ============================================================
+# PARENT APPLICATION — App of Apps
+# ============================================================
+# Ye file ArgoCD ko batati hai ki infra/argocd/apps/ folder ko watch karo.
+# Us folder mein jo bhi Application manifest hogi, ArgoCD use auto-deploy karega.
+# ArgoCD Dashboard mein ye ek "parent card" ki tarah dikhega jiske andar
+# saari child apps (frontend, backend, databases, etc.) hongi.
+# ============================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-of-apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent.git
+    targetRevision: kanha
+    # Ye folder watch hoga — isme sirf Application manifests rakho
+    path: infra/argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true     # Agar koi app folder se hata do to ArgoCD se bhi hategi
+      selfHeal: true  # Manual changes automatically revert ho jayengi
+    syncOptions:
+      - CreateNamespace=true
