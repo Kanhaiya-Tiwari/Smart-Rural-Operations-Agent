@@ -115,7 +115,6 @@ docker compose -f backend/docker-compose.yml up -d --build
 npm install
 npm run dev
 ```
-
 ### 2. Cloud Deployment (AWS EKS with Terraform)
 This project is designed to be deployed to a production-grade EKS cluster.
 
