@@ -94,7 +94,6 @@ graph LR
     -   **Security**: Snyk, Trivy, Gitleaks, Bandit, OWASP ZAP.
 
 ---
-
 ## 🚀 Getting Started
 
 ### 1. Local Development (Docker Compose)
