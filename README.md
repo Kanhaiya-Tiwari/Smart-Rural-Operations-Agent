@@ -175,7 +175,6 @@ Every push to the `main` branch triggers a comprehensive security-focused pipeli
 </div>
 
 ---
-
 ## 📜 License
 Licensed under the [MIT License](LICENSE).
 
