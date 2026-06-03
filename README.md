@@ -134,9 +134,7 @@ aws eks update-kubeconfig --region <your-region> --name <cluster-name>
 
 #### **C. Deploy with GitOps (ArgoCD)**
 Install ArgoCD and apply the bootstrap manifest:
-```bash
 kubectl apply -f infra/argocd/app-of-apps.yaml
-```
 ArgoCD will automatically synchronize the state of the cluster with the manifests in `infra/k8s/`, deploying all databases, microservices, and networking resources.
 
 ---
