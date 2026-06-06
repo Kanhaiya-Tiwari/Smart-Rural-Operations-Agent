@@ -17,7 +17,6 @@
 </div>
 
 ---
-
 ## 📖 Overview
 
 **SROA (Smart Rural Operations Agent)** is a cutting-edge, full-stack microservices platform designed to bridge the gap between advanced technology and rural agriculture. By combining **Real-time Data Aggregation**, **Generative AI**, and **Cloud-Native Infrastructure**, SROA provides farmers with actionable insights, risk assessments, and market intelligence.
