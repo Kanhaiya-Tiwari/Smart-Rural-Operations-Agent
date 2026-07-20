@@ -2,7 +2,6 @@
 # This stage uses a full Node.js environment to install dependencies and build the React application.
 FROM node:18-alpine AS build
 WORKDIR /app
-
 # Copy package files first to leverage Docker's layer caching for node_modules.
 COPY package*.json ./
 RUN npm install
