@@ -83,7 +83,6 @@ services:
       - postgres
     ports:
       - "8097:8000"
-
   # Frontend Service
   frontend:
     build:
