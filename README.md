@@ -15,7 +15,6 @@
   [![Orchestration: Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-326CE5.svg?logo=kubernetes)](https://kubernetes.io/)
   [![Continuous Delivery: ArgoCD](https://img.shields.io/badge/CD-ArgoCD-EF7B4D.svg?logo=argo)](https://argoproj.github.io/cd/)
 </div>
-
 ---
 ## 📖 Overview
 
