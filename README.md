@@ -48,7 +48,6 @@ graph LR
     subgraph "API Gateway"
         Ingress[Nginx Ingress]
     end
-    
     subgraph "Microservices Cluster (FastAPI)"
         Auth[Auth Service]
         Profile[Profile Service]
