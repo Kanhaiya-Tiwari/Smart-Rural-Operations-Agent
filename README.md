@@ -2,7 +2,6 @@
   <img src="assets/logo.png" width="200" alt="SROA Logo">
   <h1>🌾 SROA: Smart Rural Operations Agent</h1>
   <p><b>An Advanced AI-Driven Agriculture Assistant Platform</b></p>
-  
   <p>
     <a href="https://skillicons.dev">
       <img src="https://skillicons.dev/icons?i=react,vite,ts,tailwind,fastapi,python,postgres,redis,kafka,docker,kubernetes,terraform,githubactions" alt="Tech Stack" />
