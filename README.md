@@ -8,7 +8,6 @@
     </a>
   </p>
 
-  
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![DevSecOps Pipeline](https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent/actions/workflows/devsecops-pipeline.yml/badge.svg)](https://github.com/Kanhaiya-Tiwari/Smart-Rural-Operations-Agent/actions)
   [![Infrastructure: Terraform](https://img.shields.io/badge/Infrastructure-Terraform-623CE4.svg?logo=terraform)](https://www.terraform.io/)
