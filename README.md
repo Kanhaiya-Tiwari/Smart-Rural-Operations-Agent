@@ -70,7 +70,6 @@ graph LR
     Agent --> LLM
     Notify --> MQ
 ```
-
 ---
 
 ## 🧰 Technology Stack
