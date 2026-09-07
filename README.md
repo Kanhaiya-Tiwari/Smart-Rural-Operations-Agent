@@ -21,7 +21,6 @@
 
 This project serves as a comprehensive demonstration of modern software engineering, featuring a robust **DevSecOps** pipeline, **Infrastructure as Code (IaC)**, and **GitOps** deployment strategies.
 ---
-
 ## 🛠️ How it Works: Functional Journey
 
 SROA is not just a dashboard; it's an intelligent ecosystem:
