@@ -25,6 +25,7 @@ This project serves as a comprehensive demonstration of modern software engineer
 
 SROA is not just a dashboard; it's an intelligent ecosystem:
 
+
 1.  **User Onboarding**: Farmers register and set up a **Location-Aware Profile**, specifying their primary crops and notification preferences.
 2.  **Data Ingestion**: The system pulls live data from **OpenWeather** (for meteorological tracking) and **AGMARKNET** (for real-time Mandi price monitoring).
 3.  **AI Intelligence (The Agent)**: An AI Agent service powered by **LangChain** and **Ollama** analyzes the combined weather and market data. It provides personalized crop recommendations, risk warnings (e.g., impending frost or price drops), and harvest timing advice.
