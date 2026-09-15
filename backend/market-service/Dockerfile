@@ -17,7 +17,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy only the installed dependencies from the builder stage
+# Copy only the installed dependencies from the builder stage and run
 COPY --from=builder /install /usr/local
 
 # Copy the application source code
