@@ -9,7 +9,6 @@ RUN npm install
 # Copy the rest of the source code and build the production bundle.
 COPY . .
 RUN npm run build
-
 # --- Stage 2: Final Production Stage ---
 # This stage uses a lightweight Nginx image to serve the static files generated in the build stage.
 FROM nginx:stable-alpine
