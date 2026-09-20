@@ -115,7 +115,7 @@ def register(payload: RegisterRequest):
     password_hash = hash_password(payload.password)
 
     with get_conn() as conn, conn.cursor() as cur:
-        cur.execute("SELECT id FROM users WHERE email = %s", (payload.email.lower(),))
+        cur.execute("SELECT id FROM users WHERE email = %s", (payload.email.lower().strip(),))
         exists = cur.fetchone()
         if exists:
             raise HTTPException(status_code=409, detail="Email already registered")
