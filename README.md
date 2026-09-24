@@ -91,7 +91,7 @@ graph LR
 ## 🚀 Getting Started
 
 ### 1. Local Development (Docker Compose)
-Ideal for testing features and UI changes locally.
+Ideal for testing features and UI changes locally. not for production frienly
 
 ```bash
 # Clone the repository
