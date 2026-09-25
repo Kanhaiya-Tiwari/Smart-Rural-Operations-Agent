@@ -30,7 +30,17 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" /></div>}>
+        <Suspense fallback={
+          <div
+            className="min-h-screen bg-background flex flex-col items-center justify-center gap-3"
+            role="status"
+            aria-live="polite"
+            aria-label="Loading SROA application"
+          >
+            <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <span className="text-sm text-muted-foreground">Loading SROA...</span>
+          </div>
+        }>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

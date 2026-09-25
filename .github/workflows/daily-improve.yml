@@ -1,0 +1,80 @@
+name: Daily Improvement
+
+on:
+  schedule:
+    - cron: "30 15 * * *" # 9:00 PM IST = 15:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-improve-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  improve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          git config user.name "Kanhaiya-Tiwari"
+          git config user.email "kanhaiyatiwari506@gmail.com"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        shell: bash
+        run: npm ci
+
+      - name: Run verification
+        shell: bash
+        run: |
+          npm run lint
+          npm run test
+          npm run build
+
+      - name: Apply one safe improvement
+        id: improvement
+        shell: bash
+        run: |
+          chmod +x scripts/daily-improve.sh
+          ./scripts/daily-improve.sh
+          echo "changed=$(git status --porcelain | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Commit the verified improvement
+        id: commit
+        if: steps.improvement.outputs.changed != '0'
+        shell: bash
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No staged changes after the improvement step; skipping commit."
+            exit 0
+          fi
+          git commit -m "chore: pin Node runtime for reproducible builds"
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push to default branch
+        if: steps.commit.outputs.committed == 'true'
+        shell: bash
+        run: |
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Daily maintenance summary
+        if: steps.improvement.outputs.changed == '0'
+        shell: bash
+        run: |
+          echo "The improvement step completed without a diff; the maintenance helper will add a safe README upkeep entry on the next run."
