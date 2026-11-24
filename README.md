@@ -105,7 +105,7 @@ cd Smart-Rural-Operations-Agent
 cp backend/.env.example backend/.env
 
 # Spin up the stack
-docker compose -f backend/docker-compose.yml up -d --build
+docker compose up -d --build
 
 # Run Frontend
 npm install
